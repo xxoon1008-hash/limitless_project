@@ -138,8 +138,7 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async () => {
     if (Platform.OS === "web") {
-      const webRedirectUrl =
-        window.location.origin + "/redirect";
+      const webRedirectUrl = window.location.origin + "/redirect";
       window.location.href = `${API_URL}/oauth2/authorization/google?prompt=select_account&web_redirect=${encodeURIComponent(webRedirectUrl)}`;
       return;
     }
