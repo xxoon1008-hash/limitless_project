@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { styles } from "../style/signup_styles";
 
-const API_URL = "https://smartly-cupbearer-tricky.ngrok-free.app";
+const API_URL = "https://limitless-project.onrender.com";
 
 function FloatingLabelInput({
   label,

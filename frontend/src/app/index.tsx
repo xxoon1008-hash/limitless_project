@@ -95,7 +95,7 @@ const floatingStyles = StyleSheet.create({
   input: { marginBottom: 0, paddingTop: 24, paddingBottom: 8 },
 });
 
-const API_URL = "https://smartly-cupbearer-tricky.ngrok-free.dev";
+const API_URL = "https://limitless-project.onrender.com";
 
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
