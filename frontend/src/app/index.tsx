@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -101,6 +101,18 @@ export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      AsyncStorage.setItem("jwt_token", token).then(() => {
+        window.history.replaceState({}, "", "/");
+        router.replace("/main");
+      });
+    }
+  }, []);
+
   const handleLogin = async () => {
     if (!identifier || !password) {
       Alert.alert("알림", "모든 항목을 입력해 주세요.");
@@ -138,7 +150,7 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async () => {
     if (Platform.OS === "web") {
-      const webRedirectUrl = window.location.origin + "/redirect";
+      const webRedirectUrl = window.location.origin;
       window.location.href = `${API_URL}/oauth2/authorization/google?prompt=select_account&web_redirect=${encodeURIComponent(webRedirectUrl)}`;
       return;
     }

@@ -6,7 +6,6 @@ export default function RootLayout() {
       {/* 여기에 등록된 화면들끼리만 이동이 가능해집니다 */}
       <Stack.Screen name="index" />
       <Stack.Screen name="signup" />
-      <Stack.Screen name="redirect" />
     </Stack>
   );
 }
