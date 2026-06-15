@@ -137,6 +137,13 @@ export default function LoginScreen() {
   };
 
   const handleGoogleLogin = async () => {
+    if (Platform.OS === "web") {
+      const webRedirectUrl =
+        window.location.origin + "/redirect";
+      window.location.href = `${API_URL}/oauth2/authorization/google?prompt=select_account&web_redirect=${encodeURIComponent(webRedirectUrl)}`;
+      return;
+    }
+
     try {
       const result = await WebBrowser.openAuthSessionAsync(
         `${API_URL}/oauth2/authorization/google?prompt=select_account`,
@@ -145,7 +152,7 @@ export default function LoginScreen() {
 
       if (result.type === "success") {
         const url = result.url;
-        const token = url.split("token=")[1];
+        const token = new URL(url).searchParams.get("token");
         if (token) {
           await AsyncStorage.setItem("jwt_token", token);
           router.replace("/main");

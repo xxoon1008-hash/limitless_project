@@ -20,13 +20,22 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
         OAuth2AuthorizationRequest req = defaultResolver.resolve(request);
+        saveWebRedirect(request);
         return customize(req);
     }
 
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
         OAuth2AuthorizationRequest req = defaultResolver.resolve(request, clientRegistrationId);
+        saveWebRedirect(request);
         return customize(req);
+    }
+
+    private void saveWebRedirect(HttpServletRequest request) {
+        String webRedirect = request.getParameter("web_redirect");
+        if (webRedirect != null && !webRedirect.isBlank()) {
+            request.getSession().setAttribute("web_redirect", webRedirect);
+        }
     }
 
     private OAuth2AuthorizationRequest customize(OAuth2AuthorizationRequest request) {

@@ -54,7 +54,13 @@ public class SecurityConfig {
                                 .userService(oAuth2UserService))
                         .successHandler((request, response, authentication) -> {
                             String token = jwtTokenProvider.generateToken(authentication);
-                            response.sendRedirect("myapp://redirect?token=" + token);
+                            String webRedirect = (String) request.getSession().getAttribute("web_redirect");
+                            if (webRedirect != null && !webRedirect.isBlank()) {
+                                request.getSession().removeAttribute("web_redirect");
+                                response.sendRedirect(webRedirect + "?token=" + token);
+                            } else {
+                                response.sendRedirect("myapp://redirect?token=" + token);
+                            }
                         }));
 
         return http.build();
