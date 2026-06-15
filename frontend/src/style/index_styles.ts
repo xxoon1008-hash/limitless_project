@@ -81,6 +81,19 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  guestButton: {
+    backgroundColor: "transparent",
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.4)",
+    marginBottom: 8,
+  },
+  guestButtonText: {
+    color: "rgba(255, 255, 255, 0.7)",
+    fontSize: 14,
+  },
   signupButton: {
     backgroundColor: "transparent",
     paddingVertical: 12,

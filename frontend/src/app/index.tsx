@@ -224,6 +224,14 @@ export default function LoginScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                  style={styles.guestButton}
+                  onPress={() => router.replace("/main")}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.guestButtonText}>임시 로그인 (둘러보기)</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
                   style={styles.signupButton}
                   onPress={() => router.push("/signup")}
                   activeOpacity={0.8}

@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/project?serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:root1234}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:postgresql://dpg-d8nkl64m0tmc73e83r60-a/limitless_db
+    username: limitless_db_user
+    password: lq33O5rrnCbbrRxIwcXHPVPMiOc4CgJC
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
@@ -12,6 +12,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   security:
     oauth2:
@@ -23,7 +24,8 @@ spring:
             scope:
               - email
               - profile
-            redirect-uri: https://smartly-cupbearer-tricky.ngrok-free.dev/login/oauth2/code/google
+            redirect-uri: ${REDIRECT_URI}
+
 jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000
