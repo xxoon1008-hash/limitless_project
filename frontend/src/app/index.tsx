@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useRef, useState } from "react";
 import {
@@ -139,7 +139,7 @@ export default function LoginScreen() {
   const handleGoogleLogin = async () => {
     try {
       const result = await WebBrowser.openAuthSessionAsync(
-        `${API_URL}/oauth2/authorization/google`,
+        `${API_URL}/oauth2/authorization/google?prompt=select_account`,
         "myapp://redirect",
       );
 
@@ -228,7 +228,9 @@ export default function LoginScreen() {
                   onPress={() => router.replace("/main")}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.guestButtonText}>임시 로그인 (둘러보기)</Text>
+                  <Text style={styles.guestButtonText}>
+                    임시 로그인 (둘러보기)
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity

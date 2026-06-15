@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -19,6 +20,7 @@ public class SecurityConfig {
 
     private final OAuth2UserService oAuth2UserService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -40,6 +42,14 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .authorizationRequestResolver(
+                                        new CustomAuthorizationRequestResolver(
+                                                clientRegistrationRepository,
+                                                "/oauth2/authorization"
+                                        )
+                                )
+                        )
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService))
                         .successHandler((request, response, authentication) -> {
