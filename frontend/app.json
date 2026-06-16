@@ -9,10 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.anonymous.myapp",
-      "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "현재 위치를 지도에 표시하기 위해 위치 정보가 필요합니다."
-      }
+      "bundleIdentifier": "com.anonymous.myapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,8 +19,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.myapp",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+      "package": "com.anonymous.myapp"
     },
     "web": {
       "output": "static",

@@ -65,10 +65,7 @@ function KakaoMapWeb() {
             (position) => {
               const lat = position.coords.latitude;
               const lng = position.coords.longitude;
-              const currentPos = new (window as any).kakao.maps.LatLng(
-                lat,
-                lng,
-              );
+              const currentPos = new (window as any).kakao.maps.LatLng(lat, lng);
               map.setCenter(currentPos);
               new (window as any).kakao.maps.Marker({
                 map,
@@ -92,13 +89,7 @@ function KakaoMapWeb() {
   return (
     <div
       ref={mapRef}
-      style={{
-        width: "100%",
-        height: "100%",
-        position: "absolute",
-        top: 0,
-        left: 0,
-      }}
+      style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}
     />
   );
 }
@@ -119,7 +110,6 @@ export default function KakaoMap() {
         originWhitelist={["*"]}
         style={{ flex: 1 }}
         source={{ baseUrl: "https://localhost:8081", html: mapHtml }}
-        onPermissionRequest={(e) => e.nativeEvent.request.grant(e.nativeEvent.request.resources)}
       />
     );
   };
