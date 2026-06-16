@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Platform, Text, TouchableOpacity, View } from "react-native";
+import { Platform, TouchableOpacity, View } from "react-native";
 import { styles } from "../style/kakaomap_styles";
 
 const KAKAO_JS_KEY = "a4dc3525248e07a02ba1000b4ec12681";
@@ -25,6 +25,21 @@ const mapHtml = `
         center: new kakao.maps.LatLng(37.5665, 126.978),
         level: 3,
       });
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            var currentPos = new kakao.maps.LatLng(lat, lng);
+            map.setCenter(currentPos);
+            new kakao.maps.Marker({ map: map, position: currentPos, title: "현재 위치" });
+          },
+          function (error) {
+            console.warn("위치 정보를 가져올 수 없습니다:", error.message);
+          }
+        );
+      }
     });
   </script>
 </body>
@@ -44,6 +59,28 @@ function KakaoMapWeb() {
           center: new (window as any).kakao.maps.LatLng(37.5665, 126.978),
           level: 3,
         });
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const lat = position.coords.latitude;
+              const lng = position.coords.longitude;
+              const currentPos = new (window as any).kakao.maps.LatLng(
+                lat,
+                lng,
+              );
+              map.setCenter(currentPos);
+              new (window as any).kakao.maps.Marker({
+                map,
+                position: currentPos,
+                title: "현재 위치",
+              });
+            },
+            (error) => {
+              console.warn("위치 정보를 가져올 수 없습니다:", error.message);
+            },
+          );
+        }
       });
     };
     document.head.appendChild(script);
@@ -55,7 +92,13 @@ function KakaoMapWeb() {
   return (
     <div
       ref={mapRef}
-      style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "absolute",
+        top: 0,
+        left: 0,
+      }}
     />
   );
 }
@@ -72,6 +115,7 @@ export default function KakaoMap() {
     return (
       <WebView
         javaScriptEnabled
+        geolocationEnabled
         originWhitelist={["*"]}
         style={{ flex: 1 }}
         source={{ baseUrl: "https://localhost:8081", html: mapHtml }}
@@ -83,7 +127,7 @@ export default function KakaoMap() {
     <View style={styles.container}>
       {renderMap()}
 
-      {/* 💡 2. 새로 추가된 왼쪽 위 뒤로 가기 버튼 */}
+      {/* 뒤로 가기 버튼 */}
       <View style={styles.topLeft}>
         <TouchableOpacity
           style={{ padding: 8 }}
@@ -92,16 +136,6 @@ export default function KakaoMap() {
         >
           <Ionicons name="chevron-back" size={28} color="#000000" />
         </TouchableOpacity>
-      </View>
-
-      {/* 3. 지도 위에 둥둥 떠 있는 왼쪽 아래 만보기 */}
-      <View style={styles.bottomLeft}>
-        <Text style={styles.outlineText}>👣 {steps} 걸음</Text>
-      </View>
-
-      {/* 4. 지도 위에 둥둥 떠 있는 오른쪽 아래 칼로리 */}
-      <View style={styles.bottomRight}>
-        <Text style={styles.outlineText}>🔥 {calories} kcal</Text>
       </View>
     </View>
   );

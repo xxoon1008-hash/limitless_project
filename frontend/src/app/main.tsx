@@ -1,5 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -72,6 +72,8 @@ export default function HomeScreen() {
       setSelectedDate(today);
       return;
     }
+
+    if (attendanceDates.includes(today)) return;
 
     const token = await AsyncStorage.getItem("jwt_token");
     if (!token) {
