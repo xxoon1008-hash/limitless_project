@@ -20,9 +20,12 @@ const API_URL = "https://limitless-project.onrender.com";
 
 const getTodayDateString = () => {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
+  // 한국 시간(KST, UTC+9) 기준으로 날짜 계산
+  const kstOffset = 9 * 60;
+  const kstDate = new Date(now.getTime() + (kstOffset + now.getTimezoneOffset()) * 60000);
+  const year = kstDate.getFullYear();
+  const month = String(kstDate.getMonth() + 1).padStart(2, "0");
+  const day = String(kstDate.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 

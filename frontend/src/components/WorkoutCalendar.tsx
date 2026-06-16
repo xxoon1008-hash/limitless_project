@@ -12,12 +12,13 @@ export default function WorkoutCalendar({
     return acc;
   }, {});
 
-  // 현재 선택된 날짜 원형 테두리 표시
+  // 현재 선택된 날짜 원형 테두리 표시 (출석한 날이면 초록색 유지)
   if (selectedDate) {
+    const isAttended = attendanceDates.includes(selectedDate);
     markedDates[selectedDate] = {
       ...markedDates[selectedDate],
       selected: true,
-      selectedColor: "#FF5252",
+      selectedColor: isAttended ? "#4CAF50" : "#FF5252",
     };
   }
 
