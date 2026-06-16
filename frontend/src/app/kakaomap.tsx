@@ -25,6 +25,20 @@ const mapHtml = `
         center: new kakao.maps.LatLng(37.5665, 126.978),
         level: 3,
       });
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            var currentPos = new kakao.maps.LatLng(
+              position.coords.latitude,
+              position.coords.longitude
+            );
+            map.setCenter(currentPos);
+            new kakao.maps.Marker({ map: map, position: currentPos, title: "현재 위치" });
+          },
+          function () {}
+        );
+      }
     });
   </script>
 </body>
@@ -40,10 +54,28 @@ function KakaoMapWeb() {
     script.onload = () => {
       (window as any).kakao.maps.load(() => {
         if (!mapRef.current) return;
-        new (window as any).kakao.maps.Map(mapRef.current, {
+        const map = new (window as any).kakao.maps.Map(mapRef.current, {
           center: new (window as any).kakao.maps.LatLng(37.5665, 126.978),
           level: 3,
         });
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const currentPos = new (window as any).kakao.maps.LatLng(
+                position.coords.latitude,
+                position.coords.longitude,
+              );
+              map.setCenter(currentPos);
+              new (window as any).kakao.maps.Marker({
+                map,
+                position: currentPos,
+                title: "현재 위치",
+              });
+            },
+            () => {},
+          );
+        }
       });
     };
     document.head.appendChild(script);
@@ -55,7 +87,13 @@ function KakaoMapWeb() {
   return (
     <div
       ref={mapRef}
-      style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "absolute",
+        top: 0,
+        left: 0,
+      }}
     />
   );
 }
@@ -72,6 +110,7 @@ export default function KakaoMap() {
     return (
       <WebView
         javaScriptEnabled
+        geolocationEnabled
         originWhitelist={["*"]}
         style={{ flex: 1 }}
         source={{ baseUrl: "https://localhost:8081", html: mapHtml }}

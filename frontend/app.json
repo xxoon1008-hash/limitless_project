@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.anonymous.myapp"
+      "bundleIdentifier": "com.anonymous.myapp",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "현재 위치를 지도에 표시하기 위해 위치 정보가 필요합니다."
+      }
     },
     "android": {
       "adaptiveIcon": {
