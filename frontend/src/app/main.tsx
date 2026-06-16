@@ -1,6 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,6 +15,8 @@ import {
 } from "react-native";
 import WorkoutCalendar from "../components/WorkoutCalendar";
 import { styles } from "../style/main_styles";
+
+const API_URL = "https://limitless-project.onrender.com";
 
 const getTodayDateString = () => {
   const now = new Date();
@@ -29,6 +32,25 @@ export default function HomeScreen() {
   const [message, setMessage] = useState("");
   const [isCheckingAttendance, setIsCheckingAttendance] = useState(false);
 
+  useEffect(() => {
+    const loadAttendances = async () => {
+      const token = await AsyncStorage.getItem("jwt_token");
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_URL}/api/attendance`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const dates: string[] = await res.json();
+          setAttendanceDates(dates);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    loadAttendances();
+  }, []);
+
   // 음식 검색 팝업 상태 관리
   const [isFoodModalVisible, setIsFoodModalVisible] = useState(false);
   const [foodSearchText, setFoodSearchText] = useState("");
@@ -41,7 +63,7 @@ export default function HomeScreen() {
     "2026-06-10": { intake: 1800, burned: 600 },
   });
 
-  const handleAttendance = () => {
+  const handleAttendance = async () => {
     if (isCheckingAttendance) return;
     const today = getTodayDateString();
 
@@ -51,15 +73,32 @@ export default function HomeScreen() {
       return;
     }
 
-    if (attendanceDates.includes(today)) {
-      setMessage("오늘은 이미 출석 체크를 완료했습니다!");
+    const token = await AsyncStorage.getItem("jwt_token");
+    if (!token) {
+      setMessage("로그인이 필요합니다.");
       return;
     }
 
     setIsCheckingAttendance(true);
-    setAttendanceDates((prev) => [...prev, today]);
-    setMessage("출석 체크가 완료되었습니다.");
-    setIsCheckingAttendance(false);
+    try {
+      const res = await fetch(`${API_URL}/api/attendance`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setAttendanceDates((prev) => [...prev, today]);
+        setMessage("출석 체크가 완료되었습니다.");
+      } else {
+        setMessage(data.message || "출석 체크에 실패했습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+      setMessage("서버와 통신 중 오류가 발생했습니다.");
+    } finally {
+      setIsCheckingAttendance(false);
+    }
   };
 
   // 음식 검색 버튼 눌렀을 때 실행될 함수

@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   ImageBackground,
   KeyboardAvoidingView,
@@ -102,20 +103,14 @@ export default function SignupScreen() {
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-
   const handleSignup = async () => {
-    setErrorMessage("");
-    setSuccessMessage("");
-
     if (!email || !name || !nickname || !password || !passwordCheck) {
-      setErrorMessage("모든 항목을 입력해 주세요.");
+      Alert.alert("알림", "모든 항목을 입력해 주세요.");
       return;
     }
 
     if (password !== passwordCheck) {
-      setErrorMessage("비밀번호가 일치하지 않습니다.");
+      Alert.alert("알림", "비밀번호가 일치하지 않습니다.");
       return;
     }
 
@@ -132,14 +127,15 @@ export default function SignupScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccessMessage("회원가입이 완료되었습니다!");
-        setTimeout(() => router.replace("/"), 1500);
+        Alert.alert("성공", "회원가입이 완료되었습니다!", [
+          { text: "확인", onPress: () => router.replace("/") },
+        ]);
       } else {
-        setErrorMessage(data.message || "회원가입에 실패했습니다.");
+        Alert.alert("실패", data.message || "회원가입에 실패했습니다.");
       }
     } catch (error) {
       console.error(error);
-      setErrorMessage("서버와 통신 중 오류가 발생했습니다.");
+      Alert.alert("알림", "서버와 통신 중 오류가 발생했습니다.");
     }
   };
 
@@ -206,18 +202,7 @@ export default function SignupScreen() {
               <Text style={styles.submitButtonText}>회원가입</Text>
             </TouchableOpacity>
 
-            {errorMessage ? (
-              <Text style={{ color: "#FF5252", textAlign: "center", marginBottom: 12 }}>
-                {errorMessage}
-              </Text>
-            ) : null}
-            {successMessage ? (
-              <Text style={{ color: "#4CAF50", textAlign: "center", marginBottom: 12 }}>
-                {successMessage}
-              </Text>
-            ) : null}
-
-            <TouchableOpacity
+<TouchableOpacity
               style={styles.backButton}
               onPress={() => router.back()}
             >
