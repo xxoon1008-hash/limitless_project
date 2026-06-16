@@ -198,7 +198,7 @@ export default function MyPageScreen() {
         <Text style={styles.securityFooter}></Text>
       </ScrollView>
 
-      {/* 💡 통합 팝업창 (activeModal 상태에 따라 내용이 바뀜) */}
+      {/* 통합 팝업창 (activeModal 상태에 따라 내용이 바뀜) */}
       <Modal
         animationType="fade"
         transparent={true}

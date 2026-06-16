@@ -128,7 +128,13 @@ export default function KakaoMap() {
       {renderMap()}
 
       {/* 뒤로 가기 버튼 */}
-      <View style={styles.topLeft}>
+      <View
+        style={
+          Platform.OS === "web"
+            ? ({ position: "fixed", top: 60, left: 20, zIndex: 100 } as any)
+            : styles.topLeft
+        }
+      >
         <TouchableOpacity
           style={{ padding: 8 }}
           onPress={() => router.push("/main")}
