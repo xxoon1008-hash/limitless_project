@@ -25,9 +25,13 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserRequestDto request) {
         // 이메일 또는 닉네임으로 유저 조회
-        User user = userRepository.findByEmail(request.getEmail())
-                .or(() -> userRepository.findByNickname(request.getEmail()))
-                .orElse(null);
+        User user = null;
+        if (request.getEmail() != null) {
+            user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        }
+        if (user == null && request.getNickname() != null) {
+            user = userRepository.findByNickname(request.getNickname()).orElse(null);
+        }
 
         if (user == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "이메일 또는 비밀번호가 올바르지 않습니다."));
