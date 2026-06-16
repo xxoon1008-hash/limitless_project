@@ -1,8 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useState } from "react";
-import { TouchableOpacity, View } from "react-native";
-import { WebView } from "react-native-webview";
+import { useEffect, useRef, useState } from "react";
+import { Platform, TouchableOpacity, View } from "react-native";
 import { styles } from "../style/kakaomap_styles";
 
 const KAKAO_JS_KEY = "a4dc3525248e07a02ba1000b4ec12681";
@@ -32,22 +31,65 @@ const mapHtml = `
 </html>
 `;
 
+function KakaoMapWeb() {
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false`;
+    script.onload = () => {
+      (window as any).kakao.maps.load(() => {
+        if (!mapRef.current) return;
+        new (window as any).kakao.maps.Map(mapRef.current, {
+          center: new (window as any).kakao.maps.LatLng(37.5665, 126.978),
+          level: 3,
+        });
+      });
+    };
+    document.head.appendChild(script);
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={mapRef}
+      style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}
+    />
+  );
+}
+
 export default function KakaoMap() {
   const [steps, setSteps] = useState(5432);
   const [calories, setCalories] = useState(240);
 
-  return (
-    <View style={styles.container}>
-      {/* 1. 배경에 꽉 차게 깔리는 지도 */}
+  const renderMap = () => {
+    if (Platform.OS === "web") {
+      return <KakaoMapWeb />;
+    }
+    const { WebView } = require("react-native-webview");
+    return (
       <WebView
         javaScriptEnabled
         originWhitelist={["*"]}
         style={{ flex: 1 }}
         source={{ baseUrl: "https://localhost:8081", html: mapHtml }}
       />
+    );
+  };
 
-      {/* 💡 2. 새로 추가된 왼쪽 위 뒤로 가기 버튼 */}
-      <View style={styles.topLeft}>
+  return (
+    <View style={styles.container}>
+      {renderMap()}
+
+      <View
+        style={
+          Platform.OS === "web"
+            ? ({ position: "fixed", top: 60, left: 20, zIndex: 100 } as any)
+            : styles.topLeft
+        }
+      >
         <TouchableOpacity
           style={{ padding: 8 }}
           onPress={() => router.push("/main")}
