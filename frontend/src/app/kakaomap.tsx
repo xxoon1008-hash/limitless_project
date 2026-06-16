@@ -119,6 +119,7 @@ export default function KakaoMap() {
         originWhitelist={["*"]}
         style={{ flex: 1 }}
         source={{ baseUrl: "https://localhost:8081", html: mapHtml }}
+        onPermissionRequest={(e) => e.nativeEvent.request.grant(e.nativeEvent.request.resources)}
       />
     );
   };
