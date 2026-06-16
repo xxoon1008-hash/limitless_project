@@ -8,7 +8,6 @@ export const styles = StyleSheet.create({
     position: "absolute",
     top: 60,
     left: 20,
-    zIndex: 100,
   },
   backButton: {
     backgroundColor: "rgba(255, 255, 255, 0.85)",
