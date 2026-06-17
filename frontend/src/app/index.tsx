@@ -3,7 +3,6 @@ import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useRef, useState } from "react";
 import {
-  Alert,
   Animated,
   Image,
   ImageBackground,
@@ -18,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { styles } from "../style/index_styles";
+import { showAlert } from "../utils/alert";
 
 function FloatingLabelInput({
   label,
@@ -115,7 +115,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!identifier || !password) {
-      Alert.alert("알림", "모든 항목을 입력해 주세요.");
+      showAlert("알림", "모든 항목을 입력해 주세요.");
       return;
     }
 
@@ -140,11 +140,11 @@ export default function LoginScreen() {
         await AsyncStorage.setItem("jwt_token", data.token);
         router.replace("/main");
       } else {
-        Alert.alert("실패", data.message || "로그인 정보가 올바르지 않습니다.");
+        showAlert("실패", data.message || "로그인 정보가 올바르지 않습니다.");
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("알림", "존재하지 않는 계정입니다.");
+      showAlert("알림", "존재하지 않는 계정입니다.");
     }
   };
 
@@ -171,7 +171,7 @@ export default function LoginScreen() {
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("에러", "구글 로그인 중 오류가 발생했습니다.");
+      showAlert("에러", "구글 로그인 중 오류가 발생했습니다.");
     }
   };
 

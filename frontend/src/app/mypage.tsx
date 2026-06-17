@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -14,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { styles } from "../style/mypage_styles";
+import { showAlert } from "../utils/alert";
 
 export default function MyPageScreen() {
   const [userName, setUserName] = useState("");
@@ -84,33 +84,33 @@ export default function MyPageScreen() {
       // 1. 이름 변경 로직
       if (activeModal === "name") {
         const safeName = nameInput.trim();
-        if (!safeName) return Alert.alert("알림", "이름을 입력해 주세요.");
+        if (!safeName) return showAlert("알림", "이름을 입력해 주세요.");
         if (safeName.length > 10)
-          return Alert.alert("알림", "10자 이내로 입력해 주세요.");
+          return showAlert("알림", "10자 이내로 입력해 주세요.");
         setUserName(safeName);
-        Alert.alert("완료", "이름이 성공적으로 변경되었습니다.");
+        showAlert("완료", "이름이 성공적으로 변경되었습니다.");
       }
       // 2. 비밀번호 변경 로직
       else if (activeModal === "password") {
         if (!passwordInput || !passwordConfirmInput)
-          return Alert.alert("알림", "비밀번호를 모두 입력해 주세요.");
+          return showAlert("알림", "비밀번호를 모두 입력해 주세요.");
         if (passwordInput !== passwordConfirmInput)
-          return Alert.alert("알림", "비밀번호가 서로 일치하지 않습니다.");
+          return showAlert("알림", "비밀번호가 서로 일치하지 않습니다.");
         // TODO: 백엔드 비밀번호 변경 API 연동
-        Alert.alert("완료", "비밀번호가 성공적으로 변경되었습니다.");
+        showAlert("완료", "비밀번호가 성공적으로 변경되었습니다.");
       }
       // 4. 키/몸무게 변경 로직
       else if (activeModal === "body") {
         if (!heightInput || !weightInput)
-          return Alert.alert("알림", "키와 몸무게를 모두 입력해 주세요.");
+          return showAlert("알림", "키와 몸무게를 모두 입력해 주세요.");
         // TODO: 백엔드 신체 데이터 업데이트 API 연동
-        Alert.alert("완료", "신체 정보가 성공적으로 업데이트되었습니다.");
+        showAlert("완료", "신체 정보가 성공적으로 업데이트되었습니다.");
       }
 
       // 저장 성공 시 팝업 닫기
       closeModal();
     } catch (error) {
-      Alert.alert("오류", "전송 중 오류가 발생했습니다.");
+      showAlert("오류", "전송 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -118,13 +118,13 @@ export default function MyPageScreen() {
 
   // 회원 탈퇴 로직
   const handleDeleteAccount = () => {
-    Alert.alert("알림", "정말로 탈퇴하시겠습니까?", [
+    showAlert("알림", "정말로 탈퇴하시겠습니까?", [
       { text: "취소", style: "cancel" },
       {
         text: "탈퇴하기",
         style: "destructive",
         onPress: () => {
-          Alert.alert("탈퇴 완료", "이용해 주셔서 감사합니다.", [
+          showAlert("탈퇴 완료", "이용해 주셔서 감사합니다.", [
             { text: "확인", onPress: () => router.replace("/") },
           ]);
         },
@@ -171,14 +171,6 @@ export default function MyPageScreen() {
         <View style={styles.menuContainer}>
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => openModal("body")}
-          >
-            <Text style={styles.menuText}>신체정보 입력</Text>
-            <Text style={styles.arrow}>＞</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
             onPress={() => openModal("password")}
           >
             <Text style={styles.menuText}>비밀번호 변경</Text>
@@ -187,7 +179,7 @@ export default function MyPageScreen() {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => Alert.alert("알림", "이메일: support@limitless.com")}
+            onPress={() => showAlert("알림", "이메일: support@limitless.com")}
           >
             <Text style={styles.menuText}>고객 지원</Text>
             <Text style={styles.arrow}>＞</Text>
@@ -253,29 +245,6 @@ export default function MyPageScreen() {
                   placeholder="비밀번호 확인"
                   placeholderTextColor="#888"
                   secureTextEntry // 비밀번호 가리기
-                />
-              </>
-            )}
-
-            {/* 키/몸무게 변경 UI */}
-            {activeModal === "body" && (
-              <>
-                <Text style={styles.modalTitle}>신체 정보 수정</Text>
-                <TextInput
-                  style={styles.modalInput}
-                  value={heightInput}
-                  onChangeText={setHeightInput}
-                  placeholder="키 입력 (cm)"
-                  placeholderTextColor="#888"
-                  keyboardType="numeric" // 숫자 키보드 띄우기
-                />
-                <TextInput
-                  style={styles.modalInput}
-                  value={weightInput}
-                  onChangeText={setWeightInput}
-                  placeholder="몸무게 입력 (kg)"
-                  placeholderTextColor="#888"
-                  keyboardType="numeric" // 숫자 키보드 띄우기
                 />
               </>
             )}

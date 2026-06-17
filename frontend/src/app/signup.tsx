@@ -1,7 +1,6 @@
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import {
-  Alert,
   Animated,
   ImageBackground,
   KeyboardAvoidingView,
@@ -15,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { styles } from "../style/signup_styles";
+import { showAlert } from "../utils/alert";
 
 const API_URL = "https://limitless-project.onrender.com";
 
@@ -105,12 +105,12 @@ export default function SignupScreen() {
   const [passwordCheck, setPasswordCheck] = useState("");
   const handleSignup = async () => {
     if (!email || !name || !nickname || !password || !passwordCheck) {
-      Alert.alert("알림", "모든 항목을 입력해 주세요.");
+      showAlert("알림", "모든 항목을 입력해 주세요.");
       return;
     }
 
     if (password !== passwordCheck) {
-      Alert.alert("알림", "비밀번호가 일치하지 않습니다.");
+      showAlert("알림", "비밀번호가 일치하지 않습니다.");
       return;
     }
 
@@ -127,15 +127,15 @@ export default function SignupScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert("성공", "회원가입이 완료되었습니다!", [
+        showAlert("성공", "회원가입이 완료되었습니다!", [
           { text: "확인", onPress: () => router.replace("/") },
         ]);
       } else {
-        Alert.alert("실패", data.message || "회원가입에 실패했습니다.");
+        showAlert("실패", data.message || "회원가입에 실패했습니다.");
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("알림", "서버와 통신 중 오류가 발생했습니다.");
+      showAlert("알림", "서버와 통신 중 오류가 발생했습니다.");
     }
   };
 

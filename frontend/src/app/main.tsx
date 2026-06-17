@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import WorkoutCalendar from "../components/WorkoutCalendar";
 import { styles } from "../style/main_styles";
+import { showAlert } from "../utils/alert";
 
 const API_URL = "https://limitless-project.onrender.com";
 
@@ -69,7 +69,7 @@ export default function HomeScreen() {
     const today = getTodayDateString();
 
     if (selectedDate !== today) {
-      Alert.alert("알림", "출석 체크는 오늘 날짜만 가능합니다.");
+      showAlert("알림", "출석 체크는 오늘 날짜만 가능합니다.");
       setSelectedDate(today);
       return;
     }
@@ -107,7 +107,7 @@ export default function HomeScreen() {
   // 음식 검색 버튼 눌렀을 때 실행될 함수
   const handleSearchFood = () => {
     if (!foodSearchText.trim()) {
-      Alert.alert("알림", "검색할 음식을 입력해 주세요.");
+      showAlert("알림", "검색할 음식을 입력해 주세요.");
       return;
     }
     console.log("검색한 음식:", foodSearchText);
