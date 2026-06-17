@@ -4,6 +4,7 @@ import com.example.app_project.domain.Role;
 import com.example.app_project.domain.User;
 import com.example.app_project.dto.UserRequestDto;
 import com.example.app_project.dto.UserResponseDto;
+import com.example.app_project.repository.AttendanceRepository;
 import com.example.app_project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AttendanceRepository attendanceRepository;
     private final PasswordEncoder passwordEncoder;
 
     // 회원가입
@@ -66,6 +68,7 @@ public class UserService {
     public void deleteAccount(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다"));
+        attendanceRepository.deleteAllByUser(user);
         userRepository.delete(user);
     }
 }

@@ -85,7 +85,8 @@ export default function MyPageScreen() {
       if (activeModal === "name") {
         const safeName = nameInput.trim();
         if (!safeName) return showAlert("이름을 입력해 주세요.");
-        if (safeName.length > 10) return showAlert("10자 이내로 입력해 주세요.");
+        if (safeName.length > 10)
+          return showAlert("10자 이내로 입력해 주세요.");
         setUserName(safeName);
         showAlert("이름이 성공적으로 변경되었습니다.");
       } else if (activeModal === "password") {
@@ -138,7 +139,9 @@ export default function MyPageScreen() {
             });
             if (!res.ok) {
               const data = await res.json();
-              return showAlert(data.message || "탈퇴 처리 중 오류가 발생했습니다.");
+              return showAlert(
+                data.message || "탈퇴 처리 중 오류가 발생했습니다.",
+              );
             }
             await AsyncStorage.removeItem("jwt_token");
             showAlert("이용해 주셔서 감사합니다.", [
@@ -205,11 +208,10 @@ export default function MyPageScreen() {
             <Text style={styles.arrow}>＞</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={handleLogout}
-          >
-            <Text style={[styles.menuText, { color: "#e74c3c" }]}>로그아웃</Text>
+          <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+            <Text style={[styles.menuText, { color: "#e74c3c" }]}>
+              로그아웃
+            </Text>
             <Text style={styles.arrow}>＞</Text>
           </TouchableOpacity>
 
