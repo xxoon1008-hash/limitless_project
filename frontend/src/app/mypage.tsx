@@ -84,33 +84,26 @@ export default function MyPageScreen() {
       // 1. 이름 변경 로직
       if (activeModal === "name") {
         const safeName = nameInput.trim();
-        if (!safeName) return showAlert("알림", "이름을 입력해 주세요.");
+        if (!safeName) return showAlert("이름을 입력해 주세요.");
         if (safeName.length > 10)
-          return showAlert("알림", "10자 이내로 입력해 주세요.");
+          return showAlert("10자 이내로 입력해 주세요.");
         setUserName(safeName);
-        showAlert("완료", "이름이 성공적으로 변경되었습니다.");
+        showAlert("이름이 성공적으로 변경되었습니다.");
       }
       // 2. 비밀번호 변경 로직
       else if (activeModal === "password") {
         if (!passwordInput || !passwordConfirmInput)
-          return showAlert("알림", "비밀번호를 모두 입력해 주세요.");
+          return showAlert("비밀번호를 모두 입력해 주세요.");
         if (passwordInput !== passwordConfirmInput)
-          return showAlert("알림", "비밀번호가 서로 일치하지 않습니다.");
+          return showAlert("비밀번호가 서로 일치하지 않습니다.");
         // TODO: 백엔드 비밀번호 변경 API 연동
-        showAlert("완료", "비밀번호가 성공적으로 변경되었습니다.");
-      }
-      // 4. 키/몸무게 변경 로직
-      else if (activeModal === "body") {
-        if (!heightInput || !weightInput)
-          return showAlert("알림", "키와 몸무게를 모두 입력해 주세요.");
-        // TODO: 백엔드 신체 데이터 업데이트 API 연동
-        showAlert("완료", "신체 정보가 성공적으로 업데이트되었습니다.");
+        showAlert("비밀번호가 성공적으로 변경되었습니다.");
       }
 
       // 저장 성공 시 팝업 닫기
       closeModal();
     } catch (error) {
-      showAlert("오류", "전송 중 오류가 발생했습니다.");
+      showAlert("전송 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -118,13 +111,13 @@ export default function MyPageScreen() {
 
   // 회원 탈퇴 로직
   const handleDeleteAccount = () => {
-    showAlert("알림", "정말로 탈퇴하시겠습니까?", [
+    showAlert("정말로 탈퇴하시겠습니까?", [
       { text: "취소", style: "cancel" },
       {
         text: "탈퇴하기",
         style: "destructive",
         onPress: () => {
-          showAlert("탈퇴 완료", "이용해 주셔서 감사합니다.", [
+          showAlert("이용해 주셔서 감사합니다.", [
             { text: "확인", onPress: () => router.replace("/") },
           ]);
         },
@@ -179,7 +172,7 @@ export default function MyPageScreen() {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => showAlert("알림", "이메일: support@limitless.com")}
+            onPress={() => showAlert("이메일: support@limitless.com")}
           >
             <Text style={styles.menuText}>고객 지원</Text>
             <Text style={styles.arrow}>＞</Text>

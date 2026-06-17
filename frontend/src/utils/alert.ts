@@ -6,25 +6,20 @@ type AlertButton = {
   style?: "default" | "cancel" | "destructive";
 };
 
-export function showAlert(
-  title: string,
-  message?: string,
-  buttons?: AlertButton[]
-) {
+export function showAlert(message: string, buttons?: AlertButton[]) {
   if (Platform.OS === "web") {
-    const fullMessage = message ? `${title}\n${message}` : title;
     const cancelBtn = buttons?.find((b) => b.style === "cancel");
     const confirmBtn = buttons?.find((b) => b.style !== "cancel");
 
     if (buttons && buttons.length > 1) {
-      const confirmed = window.confirm(fullMessage);
+      const confirmed = window.confirm(message);
       if (confirmed) confirmBtn?.onPress?.();
       else cancelBtn?.onPress?.();
     } else {
-      window.alert(fullMessage);
+      window.alert(message);
       buttons?.[0]?.onPress?.();
     }
   } else {
-    Alert.alert(title, message, buttons);
+    Alert.alert(message, undefined, buttons);
   }
 }

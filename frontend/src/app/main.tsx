@@ -69,7 +69,7 @@ export default function HomeScreen() {
     const today = getTodayDateString();
 
     if (selectedDate !== today) {
-      showAlert("알림", "출석 체크는 오늘 날짜만 가능합니다.");
+      showAlert("출석 체크는 오늘 날짜만 가능합니다.");
       setSelectedDate(today);
       return;
     }
@@ -107,7 +107,7 @@ export default function HomeScreen() {
   // 음식 검색 버튼 눌렀을 때 실행될 함수
   const handleSearchFood = () => {
     if (!foodSearchText.trim()) {
-      showAlert("알림", "검색할 음식을 입력해 주세요.");
+      showAlert("검색할 음식을 입력해 주세요.");
       return;
     }
     console.log("검색한 음식:", foodSearchText);
