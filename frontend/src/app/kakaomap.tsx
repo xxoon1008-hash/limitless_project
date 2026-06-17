@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Platform, TouchableOpacity, View } from "react-native";
 import { styles } from "../style/kakaomap_styles";
 
@@ -8,35 +8,9 @@ const KAKAO_JS_KEY = "a4dc3525248e07a02ba1000b4ec12681";
 const DEFAULT_LAT = 37.5665;
 const DEFAULT_LNG = 126.978;
 
-// 모바일: 고정 위치만 표시
-const MOBILE_MAP_HTML = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <style>
-    * { margin: 0; padding: 0; }
-    html, body, #map { width: 100%; height: 100%; }
-  </style>
-</head>
-<body>
-  <div id="map"></div>
-  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false"></script>
-  <script>
-    kakao.maps.load(function () {
-      new kakao.maps.Map(document.getElementById("map"), {
-        center: new kakao.maps.LatLng(${DEFAULT_LAT}, ${DEFAULT_LNG}),
-        level: 3,
-      });
-    });
-  </script>
-</body>
-</html>
-`;
-
+// 웹: Kakao Maps DOM 방식
 function KakaoMapWeb() {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
 
   useEffect(() => {
     const loadScript = (): Promise<void> =>
@@ -51,13 +25,9 @@ function KakaoMapWeb() {
     loadScript().then(() => {
       if (!mapRef.current) return;
       const kakao = (window as any).kakao;
-
-      // 1) 서울 시청 기본 위치로 지도 먼저 표시
       const defaultCenter = new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG);
       const map = new kakao.maps.Map(mapRef.current, { center: defaultCenter, level: 3 });
-      mapInstanceRef.current = map;
 
-      // 2) 위치 권한 요청 → 허용 시 현재 위치로 이동 + 마커
       navigator.geolocation?.getCurrentPosition((pos) => {
         const currentCenter = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
         map.setCenter(currentCenter);
@@ -74,26 +44,52 @@ function KakaoMapWeb() {
   );
 }
 
-export default function KakaoMap() {
-  const renderMap = () => {
-    if (Platform.OS === "web") {
-      return <KakaoMapWeb />;
-    }
+// 앱: react-native-maps 네이티브
+function NativeMap() {
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const MapView = require("react-native-maps").default;
+  const { Marker } = require("react-native-maps");
 
-    const { WebView } = require("react-native-webview");
-    return (
-      <WebView
-        javaScriptEnabled
-        originWhitelist={["*"]}
-        style={{ flex: 1 }}
-        source={{ html: MOBILE_MAP_HTML, baseUrl: "http://localhost" }}
-      />
-    );
-  };
+  useEffect(() => {
+    (async () => {
+      try {
+        const Location = await import("expo-location");
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") return;
+        const pos = await Location.getCurrentPositionAsync({});
+        setLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+      } catch {}
+    })();
+  }, []);
 
   return (
+    <MapView
+      style={{ flex: 1 }}
+      initialRegion={{
+        latitude: DEFAULT_LAT,
+        longitude: DEFAULT_LNG,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      }}
+      region={
+        location
+          ? { ...location, latitudeDelta: 0.01, longitudeDelta: 0.01 }
+          : undefined
+      }
+      showsUserLocation
+      showsMyLocationButton
+    >
+      {location && (
+        <Marker coordinate={location} title="현재 위치" />
+      )}
+    </MapView>
+  );
+}
+
+export default function KakaoMap() {
+  return (
     <View style={styles.container}>
-      {renderMap()}
+      {Platform.OS === "web" ? <KakaoMapWeb /> : <NativeMap />}
 
       <View
         style={
