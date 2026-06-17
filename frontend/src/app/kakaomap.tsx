@@ -1,14 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useRef } from "react";
-import { Platform, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 import { styles } from "../style/kakaomap_styles";
 
 const KAKAO_JS_KEY = "a4dc3525248e07a02ba1000b4ec12681";
 const DEFAULT_LAT = 37.5665;
 const DEFAULT_LNG = 126.978;
 
-const buildMapHtml = () => `
+const buildMapHtml = (lat: number, lng: number, showMarker: boolean) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,10 +23,9 @@ const buildMapHtml = () => `
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false"></script>
   <script>
     kakao.maps.load(function () {
-      new kakao.maps.Map(document.getElementById("map"), {
-        center: new kakao.maps.LatLng(${DEFAULT_LAT}, ${DEFAULT_LNG}),
-        level: 3,
-      });
+      var center = new kakao.maps.LatLng(${lat}, ${lng});
+      var map = new kakao.maps.Map(document.getElementById("map"), { center: center, level: 3 });
+      ${showMarker ? `new kakao.maps.Marker({ map: map, position: center, title: "현재 위치" });` : ""}
     });
   </script>
 </body>
@@ -37,18 +36,31 @@ function KakaoMapWeb() {
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false`;
-    script.onload = () => {
-      (window as any).kakao.maps.load(() => {
-        if (!mapRef.current) return;
-        new (window as any).kakao.maps.Map(mapRef.current, {
-          center: new (window as any).kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG),
-          level: 3,
-        });
-      });
+    const initMap = (lat: number, lng: number, showMarker: boolean) => {
+      if (!mapRef.current) return;
+      const kakao = (window as any).kakao;
+      const center = new kakao.maps.LatLng(lat, lng);
+      const map = new kakao.maps.Map(mapRef.current, { center, level: 3 });
+      if (showMarker) {
+        new kakao.maps.Marker({ map, position: center, title: "현재 위치" });
+      }
     };
-    document.head.appendChild(script);
+
+    const loadScript = (lat: number, lng: number, showMarker: boolean) => {
+      if ((window as any).kakao?.maps) {
+        (window as any).kakao.maps.load(() => initMap(lat, lng, showMarker));
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false`;
+      script.onload = () => (window as any).kakao.maps.load(() => initMap(lat, lng, showMarker));
+      document.head.appendChild(script);
+    };
+
+    navigator.geolocation?.getCurrentPosition(
+      (pos) => loadScript(pos.coords.latitude, pos.coords.longitude, true),
+      () => loadScript(DEFAULT_LAT, DEFAULT_LNG, false),
+    );
   }, []);
 
   return (
@@ -60,9 +72,40 @@ function KakaoMapWeb() {
 }
 
 export default function KakaoMap() {
+  const [location, setLocation] = useState<{ lat: number; lng: number; marker: boolean } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+
+    (async () => {
+      try {
+        const Location = await import("expo-location");
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          setLocation({ lat: DEFAULT_LAT, lng: DEFAULT_LNG, marker: false });
+          return;
+        }
+        const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, marker: true });
+      } catch {
+        setLocation({ lat: DEFAULT_LAT, lng: DEFAULT_LNG, marker: false });
+      }
+    })();
+  }, []);
+
   const renderMap = () => {
     if (Platform.OS === "web") {
       return <KakaoMapWeb />;
+    }
+
+    if (!location) {
+      return (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text style={{ color: "#fff" }}>위치 정보를 가져오는 중...</Text>
+        </View>
+      );
     }
 
     const { WebView } = require("react-native-webview");
@@ -71,7 +114,7 @@ export default function KakaoMap() {
         javaScriptEnabled
         originWhitelist={["*"]}
         style={{ flex: 1 }}
-        source={{ html: buildMapHtml() }}
+        source={{ html: buildMapHtml(location.lat, location.lng, location.marker) }}
       />
     );
   };
