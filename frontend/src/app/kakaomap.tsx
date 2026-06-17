@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Platform, TouchableOpacity, View } from "react-native";
 import { styles } from "../style/kakaomap_styles";
 
@@ -8,7 +8,40 @@ const KAKAO_JS_KEY = "a4dc3525248e07a02ba1000b4ec12681";
 const DEFAULT_LAT = 37.5665;
 const DEFAULT_LNG = 126.978;
 
-// 웹: Kakao Maps DOM 방식
+const KAKAO_MAP_HTML = (withGeolocation: boolean) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    * { margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; }
+    #map { position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}"></script>
+  <script type="text/javascript">
+    var container = document.getElementById("map");
+    var options = {
+      center: new kakao.maps.LatLng(${DEFAULT_LAT}, ${DEFAULT_LNG}),
+      level: 3,
+    };
+    var map = new kakao.maps.Map(container, options);
+
+    ${withGeolocation ? `
+    navigator.geolocation && navigator.geolocation.getCurrentPosition(function (pos) {
+      var currentCenter = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+      map.setCenter(currentCenter);
+      new kakao.maps.Marker({ map: map, position: currentCenter, title: "현재 위치" });
+    });
+    ` : ""}
+  </script>
+</body>
+</html>
+`;
+
 function KakaoMapWeb() {
   const mapRef = useRef<HTMLDivElement>(null);
 
@@ -28,7 +61,6 @@ function KakaoMapWeb() {
       const defaultCenter = new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG);
       const map = new kakao.maps.Map(mapRef.current, { center: defaultCenter, level: 3 });
 
-      // 지도가 먼저 렌더링된 후 위치 요청
       requestAnimationFrame(() => {
         navigator.geolocation?.getCurrentPosition((pos) => {
           const currentCenter = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
@@ -47,45 +79,15 @@ function KakaoMapWeb() {
   );
 }
 
-// 앱: react-native-maps 네이티브
 function NativeMap() {
-  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const MapView = require("react-native-maps").default;
-  const { Marker } = require("react-native-maps");
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const Location = await import("expo-location");
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") return;
-        const pos = await Location.getCurrentPositionAsync({});
-        setLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
-      } catch {}
-    })();
-  }, []);
-
+  const { WebView } = require("react-native-webview");
   return (
-    <MapView
+    <WebView
+      javaScriptEnabled
+      originWhitelist={["*"]}
       style={{ flex: 1 }}
-      initialRegion={{
-        latitude: DEFAULT_LAT,
-        longitude: DEFAULT_LNG,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      }}
-      region={
-        location
-          ? { ...location, latitudeDelta: 0.01, longitudeDelta: 0.01 }
-          : undefined
-      }
-      showsUserLocation
-      showsMyLocationButton
-    >
-      {location && (
-        <Marker coordinate={location} title="현재 위치" />
-      )}
-    </MapView>
+      source={{ html: KAKAO_MAP_HTML(false), baseUrl: "https://localhost" }}
+    />
   );
 }
 
