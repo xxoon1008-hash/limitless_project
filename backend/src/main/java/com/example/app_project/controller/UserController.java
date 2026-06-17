@@ -31,4 +31,24 @@ public class UserController {
         String email = jwtTokenProvider.getEmailFromToken(token.replace("Bearer ", ""));
         return ResponseEntity.ok(userService.getMyProfile(email));
     }
+
+    @PutMapping("/password")
+    public ResponseEntity<?> updatePassword(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, String> body) {
+        String email = jwtTokenProvider.getEmailFromToken(token.replace("Bearer ", ""));
+        String newPassword = body.get("password");
+        if (newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "비밀번호를 입력해 주세요."));
+        }
+        userService.updatePassword(email, newPassword);
+        return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deleteAccount(@RequestHeader("Authorization") String token) {
+        String email = jwtTokenProvider.getEmailFromToken(token.replace("Bearer ", ""));
+        userService.deleteAccount(email);
+        return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 완료되었습니다."));
+    }
 }

@@ -65,4 +65,8 @@ public class User {
     public void updateWeight(Double weight) {
         this.weight = weight;
     }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }

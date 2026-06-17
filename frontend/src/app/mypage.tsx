@@ -76,31 +76,40 @@ export default function MyPageScreen() {
     setActiveModal(null);
   };
 
-  // 💡 데이터 저장 (친구분이 백엔드 API를 연결할 곳!)
+  const API_URL = "https://limitless-project.onrender.com";
+
   const handleSaveData = async () => {
     try {
       setIsLoading(true);
 
-      // 1. 이름 변경 로직
       if (activeModal === "name") {
         const safeName = nameInput.trim();
         if (!safeName) return showAlert("이름을 입력해 주세요.");
-        if (safeName.length > 10)
-          return showAlert("10자 이내로 입력해 주세요.");
+        if (safeName.length > 10) return showAlert("10자 이내로 입력해 주세요.");
         setUserName(safeName);
         showAlert("이름이 성공적으로 변경되었습니다.");
-      }
-      // 2. 비밀번호 변경 로직
-      else if (activeModal === "password") {
+      } else if (activeModal === "password") {
         if (!passwordInput || !passwordConfirmInput)
           return showAlert("비밀번호를 모두 입력해 주세요.");
         if (passwordInput !== passwordConfirmInput)
           return showAlert("비밀번호가 서로 일치하지 않습니다.");
-        // TODO: 백엔드 비밀번호 변경 API 연동
+
+        const token = await AsyncStorage.getItem("jwt_token");
+        const res = await fetch(`${API_URL}/api/users/password`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ password: passwordInput }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          return showAlert(data.message || "비밀번호 변경에 실패했습니다.");
+        }
         showAlert("비밀번호가 성공적으로 변경되었습니다.");
       }
 
-      // 저장 성공 시 팝업 닫기
       closeModal();
     } catch (error) {
       showAlert("전송 중 오류가 발생했습니다.");
@@ -109,17 +118,35 @@ export default function MyPageScreen() {
     }
   };
 
-  // 회원 탈퇴 로직
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem("jwt_token");
+    router.replace("/");
+  };
+
   const handleDeleteAccount = () => {
     showAlert("정말로 탈퇴하시겠습니까?", [
       { text: "취소", style: "cancel" },
       {
         text: "탈퇴하기",
         style: "destructive",
-        onPress: () => {
-          showAlert("이용해 주셔서 감사합니다.", [
-            { text: "확인", onPress: () => router.replace("/") },
-          ]);
+        onPress: async () => {
+          try {
+            const token = await AsyncStorage.getItem("jwt_token");
+            const res = await fetch(`${API_URL}/api/users/me`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) {
+              const data = await res.json();
+              return showAlert(data.message || "탈퇴 처리 중 오류가 발생했습니다.");
+            }
+            await AsyncStorage.removeItem("jwt_token");
+            showAlert("이용해 주셔서 감사합니다.", [
+              { text: "확인", onPress: () => router.replace("/") },
+            ]);
+          } catch {
+            showAlert("서버와 통신 중 오류가 발생했습니다.");
+          }
         },
       },
     ]);
@@ -175,6 +202,14 @@ export default function MyPageScreen() {
             onPress={() => showAlert("이메일: support@limitless.com")}
           >
             <Text style={styles.menuText}>고객 지원</Text>
+            <Text style={styles.arrow}>＞</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={handleLogout}
+          >
+            <Text style={[styles.menuText, { color: "#e74c3c" }]}>로그아웃</Text>
             <Text style={styles.arrow}>＞</Text>
           </TouchableOpacity>
 

@@ -52,4 +52,20 @@ public class UserService {
         user.updateWeight(weight);
         return new UserResponseDto(user);
     }
+
+    // 비밀번호 변경
+    @Transactional
+    public void updatePassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다"));
+        user.updatePassword(passwordEncoder.encode(newPassword));
+    }
+
+    // 회원 탈퇴
+    @Transactional
+    public void deleteAccount(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다"));
+        userRepository.delete(user);
+    }
 }

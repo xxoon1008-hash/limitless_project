@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import {
@@ -32,6 +33,7 @@ function FloatingLabelInput({
   keyboardType?: "default" | "email-address";
 }) {
   const [isFocused, setIsFocused] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
 
   const handleFocus = () => {
@@ -79,15 +81,29 @@ function FloatingLabelInput({
           styles.input,
           floatingStyles.input,
           isFocused && styles.inputFocused,
+          secureTextEntry && { paddingRight: 48 },
         ]}
         value={value}
         onChangeText={onChangeText}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        secureTextEntry={secureTextEntry}
+        secureTextEntry={secureTextEntry && !isVisible}
         keyboardType={keyboardType}
         autoCapitalize="none"
       />
+      {secureTextEntry && (
+        <TouchableOpacity
+          style={floatingStyles.eyeButton}
+          onPress={() => setIsVisible((v) => !v)}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name={isVisible ? "eye-outline" : "eye-off-outline"}
+            size={20}
+            color="#aaa"
+          />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -95,6 +111,13 @@ function FloatingLabelInput({
 const floatingStyles = StyleSheet.create({
   wrapper: { position: "relative", marginBottom: 20 },
   input: { paddingTop: 24, paddingBottom: 8 },
+  eyeButton: {
+    position: "absolute",
+    right: 12,
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
+  },
 });
 
 export default function SignupScreen() {
