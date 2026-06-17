@@ -28,10 +28,13 @@ function KakaoMapWeb() {
       const defaultCenter = new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG);
       const map = new kakao.maps.Map(mapRef.current, { center: defaultCenter, level: 3 });
 
-      navigator.geolocation?.getCurrentPosition((pos) => {
-        const currentCenter = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-        map.setCenter(currentCenter);
-        new kakao.maps.Marker({ map, position: currentCenter, title: "현재 위치" });
+      // 지도가 먼저 렌더링된 후 위치 요청
+      requestAnimationFrame(() => {
+        navigator.geolocation?.getCurrentPosition((pos) => {
+          const currentCenter = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+          map.setCenter(currentCenter);
+          new kakao.maps.Marker({ map, position: currentCenter, title: "현재 위치" });
+        });
       });
     });
   }, []);
