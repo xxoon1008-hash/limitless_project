@@ -161,7 +161,7 @@ export default function MyPageScreen() {
         {/* 상단 헤더 */}
         <View style={styles.topHeader}>
           <TouchableOpacity
-            style={{ padding: 8 }}
+            style={{ width: 44, height: 44, justifyContent: "center", alignItems: "center" }}
             onPress={() => router.push("/main")}
             activeOpacity={0.7}
           >
