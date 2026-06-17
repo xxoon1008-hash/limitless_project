@@ -36,33 +36,34 @@ const MOBILE_MAP_HTML = `
 
 function KakaoMapWeb() {
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
 
   useEffect(() => {
-    const initMap = (lat: number, lng: number, showMarker: boolean) => {
+    const loadScript = (): Promise<void> =>
+      new Promise((resolve) => {
+        if ((window as any).kakao?.maps) { resolve(); return; }
+        const script = document.createElement("script");
+        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false`;
+        script.onload = () => (window as any).kakao.maps.load(resolve);
+        document.head.appendChild(script);
+      });
+
+    loadScript().then(() => {
       if (!mapRef.current) return;
       const kakao = (window as any).kakao;
-      const center = new kakao.maps.LatLng(lat, lng);
-      const map = new kakao.maps.Map(mapRef.current, { center, level: 3 });
-      if (showMarker) {
-        new kakao.maps.Marker({ map, position: center, title: "현재 위치" });
-      }
-    };
 
-    const loadScript = (lat: number, lng: number, showMarker: boolean) => {
-      if ((window as any).kakao?.maps) {
-        (window as any).kakao.maps.load(() => initMap(lat, lng, showMarker));
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false`;
-      script.onload = () => (window as any).kakao.maps.load(() => initMap(lat, lng, showMarker));
-      document.head.appendChild(script);
-    };
+      // 1) 서울 시청 기본 위치로 지도 먼저 표시
+      const defaultCenter = new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG);
+      const map = new kakao.maps.Map(mapRef.current, { center: defaultCenter, level: 3 });
+      mapInstanceRef.current = map;
 
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => loadScript(pos.coords.latitude, pos.coords.longitude, true),
-      () => loadScript(DEFAULT_LAT, DEFAULT_LNG, false),
-    );
+      // 2) 위치 권한 요청 → 허용 시 현재 위치로 이동 + 마커
+      navigator.geolocation?.getCurrentPosition((pos) => {
+        const currentCenter = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+        map.setCenter(currentCenter);
+        new kakao.maps.Marker({ map, position: currentCenter, title: "현재 위치" });
+      });
+    });
   }, []);
 
   return (
