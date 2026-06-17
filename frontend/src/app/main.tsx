@@ -22,7 +22,9 @@ const getTodayDateString = () => {
   const now = new Date();
   // 한국 시간(KST, UTC+9) 기준으로 날짜 계산
   const kstOffset = 9 * 60;
-  const kstDate = new Date(now.getTime() + (kstOffset + now.getTimezoneOffset()) * 60000);
+  const kstDate = new Date(
+    now.getTime() + (kstOffset + now.getTimezoneOffset()) * 60000,
+  );
   const year = kstDate.getFullYear();
   const month = String(kstDate.getMonth() + 1).padStart(2, "0");
   const day = String(kstDate.getDate()).padStart(2, "0");
@@ -58,13 +60,9 @@ export default function HomeScreen() {
   const [isFoodModalVisible, setIsFoodModalVisible] = useState(false);
   const [foodSearchText, setFoodSearchText] = useState("");
 
-  // 임시 칼로리 데이터
   const [calorieData, setCalorieData] = useState<{
     [key: string]: { intake: number; burned: number };
-  }>({
-    [getTodayDateString()]: { intake: 2100, burned: 450 },
-    "2026-06-10": { intake: 1800, burned: 600 },
-  });
+  }>({});
 
   const handleAttendance = async () => {
     if (isCheckingAttendance) return;

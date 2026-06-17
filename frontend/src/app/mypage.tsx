@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -15,7 +16,7 @@ import {
 import { styles } from "../style/mypage_styles";
 
 export default function MyPageScreen() {
-  const [userName, setUserName] = useState("user");
+  const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
@@ -27,8 +28,31 @@ export default function MyPageScreen() {
   const [weightInput, setWeightInput] = useState("");
 
   useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 500);
+    const loadUserInfo = async () => {
+      setIsLoading(true);
+      try {
+        const token = await AsyncStorage.getItem("jwt_token");
+        if (!token) return;
+        const res = await fetch(
+          "https://limitless-project.onrender.com/api/users/me",
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        if (res.ok) {
+          const data = await res.json();
+          // 구글 로그인이면 이메일, 일반 로그인이면 아이디 → 없으면 이메일 표시
+          if (data.provider === "google") {
+            setUserName(data.email);
+          } else {
+            setUserName(data.nickname || data.email || "");
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadUserInfo();
   }, []);
 
   // 팝업 열기 함수
@@ -74,13 +98,6 @@ export default function MyPageScreen() {
           return Alert.alert("알림", "비밀번호가 서로 일치하지 않습니다.");
         // TODO: 백엔드 비밀번호 변경 API 연동
         Alert.alert("완료", "비밀번호가 성공적으로 변경되었습니다.");
-      }
-      // 3. 아이디 변경 로직
-      else if (activeModal === "id") {
-        if (!idInput.trim())
-          return Alert.alert("알림", "변경할 아이디를 입력해 주세요.");
-        // TODO: 백엔드 아이디 중복 확인 및 변경 API 연동
-        Alert.alert("완료", "아이디가 성공적으로 변경되었습니다.");
       }
       // 4. 키/몸무게 변경 로직
       else if (activeModal === "body") {
@@ -170,14 +187,6 @@ export default function MyPageScreen() {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => openModal("id")}
-          >
-            <Text style={styles.menuText}>아이디 변경</Text>
-            <Text style={styles.arrow}>＞</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
             onPress={() => Alert.alert("알림", "이메일: support@limitless.com")}
           >
             <Text style={styles.menuText}>고객 지원</Text>
@@ -244,21 +253,6 @@ export default function MyPageScreen() {
                   placeholder="비밀번호 확인"
                   placeholderTextColor="#888"
                   secureTextEntry // 비밀번호 가리기
-                />
-              </>
-            )}
-
-            {/* 아이디 변경 UI */}
-            {activeModal === "id" && (
-              <>
-                <Text style={styles.modalTitle}>아이디 변경</Text>
-                <TextInput
-                  style={styles.modalInput}
-                  value={idInput}
-                  onChangeText={setIdInput}
-                  placeholder="새로운 영문/숫자 아이디 입력"
-                  placeholderTextColor="#888"
-                  autoCapitalize="none"
                 />
               </>
             )}
