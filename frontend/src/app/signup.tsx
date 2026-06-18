@@ -136,7 +136,7 @@ export default function SignupScreen() {
     }
 
     if (!EMAIL_REGEX.test(email)) {
-      showAlert("올바른 이메일 형식을 입력해 주세요.\n예) example@gmail.com");
+      showAlert("올바른 이메일 형식을 입력해 주세요. 예) example@gmail.com");
       return;
     }
 

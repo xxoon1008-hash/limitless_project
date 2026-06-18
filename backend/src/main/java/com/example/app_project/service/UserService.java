@@ -48,6 +48,11 @@ public class UserService {
             throw new RuntimeException("이미 사용 중인 이메일입니다.");
         }
 
+        if (request.getNickname() != null && !request.getNickname().isBlank()
+                && userRepository.findByNickname(request.getNickname()).isPresent()) {
+            throw new RuntimeException("이미 사용 중인 아이디입니다.");
+        }
+
         User user = User.builder()
                 .email(request.getEmail())
                 .name(request.getName())
@@ -75,6 +80,25 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다"));
         user.updateWeight(weight);
         return new UserResponseDto(user);
+    }
+
+    // 닉네임(아이디) 변경
+    @Transactional
+    public void updateNickname(String email, String newNickname) {
+        if (newNickname == null || newNickname.isBlank()) {
+            throw new RuntimeException("아이디를 입력해 주세요.");
+        }
+        if (newNickname.length() > 10) {
+            throw new RuntimeException("10자 이내로 입력해 주세요.");
+        }
+        userRepository.findByNickname(newNickname).ifPresent(u -> {
+            if (!u.getEmail().equals(email)) {
+                throw new RuntimeException("이미 사용 중인 아이디입니다.");
+            }
+        });
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다"));
+        user.updateNickname(newNickname);
     }
 
     // 비밀번호 변경

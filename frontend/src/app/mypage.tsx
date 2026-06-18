@@ -84,17 +84,34 @@ export default function MyPageScreen() {
 
       if (activeModal === "name") {
         const safeName = nameInput.trim();
-        if (!safeName) return showAlert("이름을 입력해 주세요.");
+        if (!safeName) return showAlert("아이디를 입력해 주세요.");
         if (safeName.length > 10)
           return showAlert("10자 이내로 입력해 주세요.");
+
+        const token = await AsyncStorage.getItem("jwt_token");
+        const res = await fetch(`${API_URL}/api/users/nickname`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ nickname: safeName }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          return showAlert(data.message || "아이디 변경에 실패했습니다.");
+        }
         setUserName(safeName);
-        showAlert("이름이 성공적으로 변경되었습니다.");
+        showAlert("아이디가 성공적으로 변경되었습니다.");
       } else if (activeModal === "password") {
         if (!passwordInput || !passwordConfirmInput)
           return showAlert("비밀번호를 모두 입력해 주세요.");
-        const PASSWORD_REGEX = /^(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+        const PASSWORD_REGEX =
+          /^(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
         if (!PASSWORD_REGEX.test(passwordInput))
-          return showAlert("비밀번호는 8자 이상이며 특수문자를 포함해야 합니다.");
+          return showAlert(
+            "비밀번호는 8자 이상이며 특수문자를 포함해야 합니다.",
+          );
         if (passwordInput !== passwordConfirmInput)
           return showAlert("비밀번호가 서로 일치하지 않습니다.");
 
@@ -164,7 +181,12 @@ export default function MyPageScreen() {
         {/* 상단 헤더 */}
         <View style={styles.topHeader}>
           <TouchableOpacity
-            style={{ width: 44, height: 44, justifyContent: "center", alignItems: "center" }}
+            style={{
+              width: 44,
+              height: 44,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
             onPress={() => router.push("/main")}
             activeOpacity={0.7}
           >
@@ -252,7 +274,7 @@ export default function MyPageScreen() {
                   style={styles.modalInput}
                   value={nameInput}
                   onChangeText={setNameInput}
-                  placeholder="새로운 이름 입력 (10자 이내)"
+                  placeholder="새로운 아이디 입력 (10자 이내)"
                   placeholderTextColor="#888"
                   maxLength={10}
                 />

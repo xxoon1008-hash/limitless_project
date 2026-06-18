@@ -32,6 +32,20 @@ public class UserController {
         return ResponseEntity.ok(userService.getMyProfile(email));
     }
 
+    @PutMapping("/nickname")
+    public ResponseEntity<?> updateNickname(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, String> body) {
+        String email = jwtTokenProvider.getEmailFromToken(token.replace("Bearer ", ""));
+        String newNickname = body.get("nickname");
+        try {
+            userService.updateNickname(email, newNickname);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+        return ResponseEntity.ok(Map.of("message", "아이디가 변경되었습니다."));
+    }
+
     @PutMapping("/password")
     public ResponseEntity<?> updatePassword(
             @RequestHeader("Authorization") String token,
