@@ -92,6 +92,9 @@ export default function MyPageScreen() {
       } else if (activeModal === "password") {
         if (!passwordInput || !passwordConfirmInput)
           return showAlert("비밀번호를 모두 입력해 주세요.");
+        const PASSWORD_REGEX = /^(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+        if (!PASSWORD_REGEX.test(passwordInput))
+          return showAlert("비밀번호는 8자 이상이며 특수문자를 포함해야 합니다.");
         if (passwordInput !== passwordConfirmInput)
           return showAlert("비밀번호가 서로 일치하지 않습니다.");
 

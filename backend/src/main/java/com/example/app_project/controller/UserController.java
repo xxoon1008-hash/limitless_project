@@ -41,7 +41,11 @@ public class UserController {
         if (newPassword == null || newPassword.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "비밀번호를 입력해 주세요."));
         }
-        userService.updatePassword(email, newPassword);
+        try {
+            userService.updatePassword(email, newPassword);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
         return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
     }
 

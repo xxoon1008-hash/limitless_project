@@ -126,9 +126,22 @@ export default function SignupScreen() {
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const PASSWORD_REGEX = /^(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+
   const handleSignup = async () => {
     if (!email || !name || !nickname || !password || !passwordCheck) {
       showAlert("모든 항목을 입력해 주세요.");
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      showAlert("올바른 이메일 형식을 입력해 주세요.\n예) example@gmail.com");
+      return;
+    }
+
+    if (!PASSWORD_REGEX.test(password)) {
+      showAlert("비밀번호는 8자 이상이며 특수문자를 포함해야 합니다.");
       return;
     }
 
@@ -225,7 +238,7 @@ export default function SignupScreen() {
               <Text style={styles.submitButtonText}>회원가입</Text>
             </TouchableOpacity>
 
-<TouchableOpacity
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => router.back()}
             >
