@@ -122,10 +122,24 @@ export const styles = StyleSheet.create({
   modalCancelButtonText: { color: "#fff", fontWeight: "bold" },
   modalSaveButton: {
     flex: 1,
-    backgroundColor: "#FF5252", // 앱 포인트 컬러인 붉은색으로 맞춤
+    backgroundColor: "#FF5252",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  modalDeleteButton: {
+    flex: 1,
+    backgroundColor: "#c0392b",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   modalSaveButtonText: { color: "#fff", fontWeight: "bold" },
+  deleteWarningText: {
+    color: "#aaa",
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 16,
+    lineHeight: 22,
+  },
 });

@@ -64,9 +64,16 @@ public class UserController {
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<?> deleteAccount(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> deleteAccount(
+            @RequestHeader("Authorization") String token,
+            @RequestBody(required = false) Map<String, String> body) {
         String email = jwtTokenProvider.getEmailFromToken(token.replace("Bearer ", ""));
-        userService.deleteAccount(email);
+        String password = body != null ? body.get("password") : null;
+        try {
+            userService.deleteAccount(email, password);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
         return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 완료되었습니다."));
     }
 }

@@ -17,6 +17,7 @@ import { showAlert } from "../utils/alert";
 
 export default function MyPageScreen() {
   const [userName, setUserName] = useState("");
+  const [userProvider, setUserProvider] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
@@ -26,6 +27,7 @@ export default function MyPageScreen() {
   const [idInput, setIdInput] = useState("");
   const [heightInput, setHeightInput] = useState("");
   const [weightInput, setWeightInput] = useState("");
+  const [deletePasswordInput, setDeletePasswordInput] = useState("");
 
   useEffect(() => {
     const loadUserInfo = async () => {
@@ -39,6 +41,7 @@ export default function MyPageScreen() {
         );
         if (res.ok) {
           const data = await res.json();
+          setUserProvider(data.provider || "local");
           // 구글 로그인이면 이메일, 일반 로그인이면 아이디 → 없으면 이메일 표시
           if (data.provider === "google") {
             setUserName(data.email);
@@ -68,6 +71,7 @@ export default function MyPageScreen() {
       setHeightInput("");
       setWeightInput("");
     }
+    if (type === "deleteAccount") setDeletePasswordInput("");
     setActiveModal(type);
   };
 
@@ -129,6 +133,29 @@ export default function MyPageScreen() {
           return showAlert(data.message || "비밀번호 변경에 실패했습니다.");
         }
         showAlert("비밀번호가 성공적으로 변경되었습니다.");
+      } else if (activeModal === "deleteAccount") {
+        if (userProvider === "local" && !deletePasswordInput)
+          return showAlert("비밀번호를 입력해 주세요.");
+
+        const token = await AsyncStorage.getItem("jwt_token");
+        const res = await fetch(`${API_URL}/api/users/me`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ password: deletePasswordInput }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          return showAlert(data.message || "탈퇴 처리 중 오류가 발생했습니다.");
+        }
+        await AsyncStorage.removeItem("jwt_token");
+        closeModal();
+        showAlert("이용해 주셔서 감사합니다.", [
+          { text: "확인", onPress: () => router.replace("/") },
+        ]);
+        return;
       }
 
       closeModal();
@@ -145,34 +172,7 @@ export default function MyPageScreen() {
   };
 
   const handleDeleteAccount = () => {
-    showAlert("정말로 탈퇴하시겠습니까?", [
-      { text: "취소", style: "cancel" },
-      {
-        text: "탈퇴하기",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const token = await AsyncStorage.getItem("jwt_token");
-            const res = await fetch(`${API_URL}/api/users/me`, {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!res.ok) {
-              const data = await res.json();
-              return showAlert(
-                data.message || "탈퇴 처리 중 오류가 발생했습니다.",
-              );
-            }
-            await AsyncStorage.removeItem("jwt_token");
-            showAlert("이용해 주셔서 감사합니다.", [
-              { text: "확인", onPress: () => router.replace("/") },
-            ]);
-          } catch {
-            showAlert("서버와 통신 중 오류가 발생했습니다.");
-          }
-        },
-      },
-    ]);
+    openModal("deleteAccount");
   };
 
   return (
@@ -296,7 +296,7 @@ export default function MyPageScreen() {
                   onChangeText={setPasswordInput}
                   placeholder="새로운 비밀번호 입력"
                   placeholderTextColor="#888"
-                  secureTextEntry // 비밀번호 가리기
+                  secureTextEntry
                 />
                 <TextInput
                   style={styles.modalInput}
@@ -304,8 +304,34 @@ export default function MyPageScreen() {
                   onChangeText={setPasswordConfirmInput}
                   placeholder="비밀번호 확인"
                   placeholderTextColor="#888"
-                  secureTextEntry // 비밀번호 가리기
+                  secureTextEntry
                 />
+              </>
+            )}
+
+            {/* 회원 탈퇴 UI */}
+            {activeModal === "deleteAccount" && (
+              <>
+                <Text style={styles.modalTitle}>회원 탈퇴</Text>
+                {userProvider === "local" ? (
+                  <>
+                    <Text style={styles.deleteWarningText}>
+                      탈퇴하시려면 현재 비밀번호를 입력해 주세요.
+                    </Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={deletePasswordInput}
+                      onChangeText={setDeletePasswordInput}
+                      placeholder="비밀번호 입력"
+                      placeholderTextColor="#888"
+                      secureTextEntry
+                    />
+                  </>
+                ) : (
+                  <Text style={styles.deleteWarningText}>
+                    정말로 탈퇴하시겠습니까?{"\n"}이 작업은 되돌릴 수 없습니다.
+                  </Text>
+                )}
               </>
             )}
 
@@ -318,10 +344,12 @@ export default function MyPageScreen() {
                 <Text style={styles.modalCancelButtonText}>취소</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.modalSaveButton}
+                style={activeModal === "deleteAccount" ? styles.modalDeleteButton : styles.modalSaveButton}
                 onPress={handleSaveData}
               >
-                <Text style={styles.modalSaveButtonText}>변경 완료</Text>
+                <Text style={styles.modalSaveButtonText}>
+                  {activeModal === "deleteAccount" ? "탈퇴하기" : "변경 완료"}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

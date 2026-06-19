@@ -112,9 +112,14 @@ public class UserService {
 
     // 회원 탈퇴
     @Transactional
-    public void deleteAccount(String email) {
+    public void deleteAccount(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다"));
+        if ("local".equals(user.getProvider())) {
+            if (password == null || !passwordEncoder.matches(password, user.getPassword())) {
+                throw new RuntimeException("비밀번호가 올바르지 않습니다.");
+            }
+        }
         attendanceRepository.deleteAllByUser(user);
         userRepository.delete(user);
     }
