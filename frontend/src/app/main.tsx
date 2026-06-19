@@ -92,7 +92,6 @@ export default function HomeScreen() {
 
       if (res.ok) {
         setAttendanceDates((prev) => [...prev, today]);
-        setMessage("출석 체크가 완료되었습니다.");
       } else {
         setMessage(data.message || "출석 체크에 실패했습니다.");
       }
