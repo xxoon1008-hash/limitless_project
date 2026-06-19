@@ -178,22 +178,6 @@ export default function MyPageScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: "#1c1c1c" }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 상단 헤더 */}
-        <View style={styles.topHeader}>
-          <TouchableOpacity
-            style={{
-              width: 44,
-              height: 44,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-            onPress={() => router.push("/main")}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="chevron-back" size={28} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-
         {/* 1. 상단 프로필 영역 */}
         <View style={styles.profileHeader}>
           <View style={styles.avatar}>
@@ -253,6 +237,21 @@ export default function MyPageScreen() {
 
         <Text style={styles.securityFooter}></Text>
       </ScrollView>
+
+      {/* 하단 메뉴 */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity onPress={() => router.replace("/main")}>
+          <Ionicons name="home-outline" size={28} color="#A0A0A0" />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.replace("/kakaomap")}>
+          <Ionicons name="map-outline" size={28} color="#A0A0A0" />
+        </TouchableOpacity>
+
+        <TouchableOpacity>
+          <Ionicons name="person" size={28} color="#FF5252" />
+        </TouchableOpacity>
+      </View>
 
       {/* 통합 팝업창 (activeModal 상태에 따라 내용이 바뀜) */}
       <Modal

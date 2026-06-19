@@ -9,6 +9,18 @@ export const styles = StyleSheet.create({
     top: 60,
     left: 20,
   },
+  bottomNav: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    backgroundColor: "#1A1A1A",
+    paddingVertical: 15,
+    justifyContent: "space-around",
+    borderTopWidth: 1,
+    borderTopColor: "#333",
+  },
   backButton: {
     backgroundColor: "rgba(255, 255, 255, 0.85)",
     width: 44,

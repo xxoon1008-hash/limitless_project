@@ -120,9 +120,7 @@ export default function HomeScreen() {
       >
         {/* 상단 헤더 */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.replace("/")}>
-            <Text style={styles.headerTitle}>Limitless</Text>
-          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Limitless</Text>
         </View>
 
         {/* 1. 달력 영역 */}
