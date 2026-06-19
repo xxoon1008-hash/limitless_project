@@ -99,20 +99,16 @@ export default function KakaoMap() {
       <View
         style={
           Platform.OS === "web"
-            ? ({ position: "fixed", bottom: 0, left: 0, right: 0, flexDirection: "row", backgroundColor: "#1A1A1A", paddingVertical: 15, justifyContent: "space-around", borderTopWidth: 1, borderTopColor: "#333", zIndex: 100 } as any)
-            : styles.bottomNav
+            ? ({ position: "fixed", top: 60, left: 20, zIndex: 100 } as any)
+            : styles.topLeft
         }
       >
-        <TouchableOpacity onPress={() => router.replace("/main")}>
-          <Ionicons name="home-outline" size={28} color="#A0A0A0" />
-        </TouchableOpacity>
-
-        <TouchableOpacity>
-          <Ionicons name="map" size={28} color="#FF5252" />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => router.push("/mypage")}>
-          <Ionicons name="person-outline" size={28} color="#A0A0A0" />
+        <TouchableOpacity
+          style={{ width: 44, height: 44, justifyContent: "center", alignItems: "center" }}
+          onPress={() => router.push("/main")}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="chevron-back" size={28} color="#000000" />
         </TouchableOpacity>
       </View>
     </View>
