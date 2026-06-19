@@ -17,6 +17,7 @@ import { styles } from "../style/main_styles";
 import { showAlert } from "../utils/alert";
 
 const API_URL = "https://limitless-project.onrender.com";
+const GEMINI_API_KEY = "AQ.Ab8RN6IeQ-o1zl4tiJPV1fhvPhY3-976e0SL07uC6JGE9g1fCg";
 
 const getTodayDateString = () => {
   const now = new Date();
@@ -59,6 +60,9 @@ export default function HomeScreen() {
   // 음식 검색 팝업 상태 관리
   const [isFoodModalVisible, setIsFoodModalVisible] = useState(false);
   const [foodSearchText, setFoodSearchText] = useState("");
+  const [aiCalorie, setAiCalorie] = useState<number | null>(null);
+  const [aiResultText, setAiResultText] = useState<string>("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   const [calorieData, setCalorieData] = useState<{
     [key: string]: { intake: number; burned: number };
@@ -104,12 +108,49 @@ export default function HomeScreen() {
   };
 
   // 음식 검색 버튼 눌렀을 때 실행될 함수
-  const handleSearchFood = () => {
-    if (!foodSearchText.trim()) {
+  const handleSearchFood = async () => {
+    const query = foodSearchText.trim();
+    if (!query) {
       showAlert("검색할 음식을 입력해 주세요.");
       return;
     }
-    console.log("검색한 음식:", foodSearchText);
+
+    setIsAiLoading(true);
+    setAiCalorie(null);
+    setAiResultText("");
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `"${query}" 1인분의 평균 칼로리(kcal)와 주요 영양소(단백질, 탄수화물, 지방)를 한국어로 간단하게 알려줘. 첫 줄에는 칼로리 숫자만 써줘(예: 350). 둘째 줄부터 영양소 정보를 써줘.`,
+                  },
+                ],
+              },
+            ],
+          }),
+        },
+      );
+      const data = await res.json();
+      const text: string =
+        data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+      const lines = text.trim().split("\n");
+      const kcal = parseInt(lines[0]?.match(/\d+/)?.[0] ?? "0", 10);
+      const detail = lines.slice(1).join("\n").trim();
+      setAiCalorie(kcal);
+      setAiResultText(detail);
+    } catch {
+      showAlert("AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setIsAiLoading(false);
+    }
   };
 
   return (
@@ -211,7 +252,12 @@ export default function HomeScreen() {
         animationType="fade"
         transparent={true}
         visible={isFoodModalVisible}
-        onRequestClose={() => setIsFoodModalVisible(false)}
+        onRequestClose={() => {
+          setIsFoodModalVisible(false);
+          setFoodSearchText("");
+          setAiCalorie(null);
+          setAiResultText("");
+        }}
       >
         <KeyboardAvoidingView
           style={styles.modalOverlay}
@@ -220,7 +266,14 @@ export default function HomeScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>식단 기록하기</Text>
-              <TouchableOpacity onPress={() => setIsFoodModalVisible(false)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setIsFoodModalVisible(false);
+                  setFoodSearchText("");
+                  setAiCalorie(null);
+                  setAiResultText("");
+                }}
+              >
                 <Ionicons name="close" size={28} color="#A0A0A0" />
               </TouchableOpacity>
             </View>
@@ -248,15 +301,45 @@ export default function HomeScreen() {
                 color="#FF5252"
                 style={{ marginBottom: 10 }}
               />
-              <Text style={styles.aiResultText}>
-                음식을 검색하시면 AI가 평균 칼로리를{"\n"}자동으로 분석해
-                드립니다!
-              </Text>
+              {isAiLoading ? (
+                <Text style={styles.aiResultText}>AI 분석 중...</Text>
+              ) : aiCalorie !== null ? (
+                <>
+                  <Text
+                    style={[
+                      styles.aiResultText,
+                      { fontSize: 20, fontWeight: "bold", color: "#FF5252" },
+                    ]}
+                  >
+                    {foodSearchText} 약 {aiCalorie} kcal
+                  </Text>
+                  {aiResultText ? (
+                    <Text
+                      style={[
+                        styles.aiResultText,
+                        { marginTop: 8, fontSize: 13 },
+                      ]}
+                    >
+                      {aiResultText}
+                    </Text>
+                  ) : null}
+                </>
+              ) : (
+                <Text style={styles.aiResultText}>
+                  음식을 검색하시면 AI가 평균 칼로리를{"\n"}자동으로 분석해
+                  드립니다!
+                </Text>
+              )}
             </View>
 
             <TouchableOpacity
               style={styles.saveFoodButton}
-              onPress={() => setIsFoodModalVisible(false)}
+              onPress={() => {
+                setIsFoodModalVisible(false);
+                setFoodSearchText("");
+                setAiCalorie(null);
+                setAiResultText("");
+              }}
             >
               <Text style={styles.saveFoodButtonText}>기록 저장하기</Text>
             </TouchableOpacity>
