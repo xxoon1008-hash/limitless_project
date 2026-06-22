@@ -272,6 +272,7 @@ export const styles = StyleSheet.create({
   resultHeader: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 8,
     marginBottom: 4,
   },
@@ -280,9 +281,10 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     flexShrink: 1,
+    textAlign: "center",
   },
-  aiResultServing: { color: C.sub, fontSize: 12, marginBottom: 10 },
-  calorieHighlight: { flexDirection: "row", alignItems: "flex-end", marginBottom: 16 },
+  aiResultServing: { color: C.sub, fontSize: 12, marginBottom: 10, textAlign: "center" },
+  calorieHighlight: { flexDirection: "row", alignItems: "flex-end", justifyContent: "center", marginBottom: 16 },
   calorieHighlightNum: {
     fontSize: 44,
     fontWeight: "900",

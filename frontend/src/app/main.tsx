@@ -111,7 +111,10 @@ export default function HomeScreen() {
     if (attendanceDates.includes(today)) return;
 
     const token = await AsyncStorage.getItem("jwt_token");
-    if (!token) { setMessage("로그인이 필요합니다."); return; }
+    if (!token) {
+      setMessage("로그인이 필요합니다.");
+      return;
+    }
 
     setIsCheckingAttendance(true);
     try {
@@ -133,7 +136,10 @@ export default function HomeScreen() {
   };
 
   const handleSearchFood = async () => {
-    if (!foodSearchText.trim()) { showAlert("검색할 음식을 입력해 주세요."); return; }
+    if (!foodSearchText.trim()) {
+      showAlert("검색할 음식을 입력해 주세요.");
+      return;
+    }
     setIsSearching(true);
     setAiResult(null);
     try {
@@ -154,7 +160,10 @@ export default function HomeScreen() {
     try {
       const res = await fetch(`${API_URL}/api/food/record`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           date: selectedDate,
           foodName: aiResult.foodName,
@@ -185,8 +194,10 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* ── 헤더 ── */}
         <View style={styles.header}>
           <View>
@@ -219,14 +230,22 @@ export default function HomeScreen() {
                 <Text style={styles.calorieUnit}> / {goalCalories} kcal</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.addFoodBtn} onPress={() => setIsFoodModalVisible(true)}>
+            <TouchableOpacity
+              style={styles.addFoodBtn}
+              onPress={() => setIsFoodModalVisible(true)}
+            >
               <Ionicons name="add" size={22} color="#fff" />
             </TouchableOpacity>
           </View>
 
           {/* 진행 바 */}
           <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: `${intakePercent}%` as any }]} />
+            <View
+              style={[
+                styles.progressBarFill,
+                { width: `${intakePercent}%` as any },
+              ]}
+            />
           </View>
 
           {/* 영양소 요약 */}
@@ -244,14 +263,19 @@ export default function HomeScreen() {
             <View style={styles.macroItem}>
               <View style={[styles.macroDot, { backgroundColor: "#60A5FA" }]} />
               <Text style={styles.macroLabel}>잔여</Text>
-              <Text style={styles.macroValue}>{Math.max(goalCalories - intake, 0)} kcal</Text>
+              <Text style={styles.macroValue}>
+                {Math.max(goalCalories - intake, 0)} kcal
+              </Text>
             </View>
           </View>
         </View>
 
         {/* ── 출석 버튼 ── */}
         <TouchableOpacity
-          style={[styles.attendanceButton, isAttendedToday && styles.attendanceButtonDone]}
+          style={[
+            styles.attendanceButton,
+            isAttendedToday && styles.attendanceButtonDone,
+          ]}
           onPress={handleAttendance}
           disabled={isCheckingAttendance || isAttendedToday}
           activeOpacity={0.85}
@@ -273,7 +297,12 @@ export default function HomeScreen() {
             </Text>
           </View>
           {!isAttendedToday && (
-            <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.5)" style={{ marginLeft: "auto" }} />
+            <Ionicons
+              name="chevron-forward"
+              size={18}
+              color="rgba(255,255,255,0.5)"
+              style={{ marginLeft: "auto" }}
+            />
           )}
         </TouchableOpacity>
         {message ? <Text style={styles.errorText}>{message}</Text> : null}
@@ -281,7 +310,9 @@ export default function HomeScreen() {
         {/* ── 달력 ── */}
         <View style={styles.calendarSection}>
           <Text style={styles.sectionTitle}>출석 캘린더</Text>
-          <Text style={styles.sectionSub}>이번 달 {attendanceDates.length}일 출석</Text>
+          <Text style={styles.sectionSub}>
+            이번 달 {attendanceDates.length}일 출석
+          </Text>
           <View style={styles.calendarBox}>
             <WorkoutCalendar
               attendanceDates={attendanceDates}
@@ -290,7 +321,6 @@ export default function HomeScreen() {
             />
           </View>
         </View>
-
       </ScrollView>
 
       {/* ── 하단 탭 ── */}
@@ -300,11 +330,17 @@ export default function HomeScreen() {
           <Ionicons name="home" size={24} color="#00C896" />
           <Text style={styles.navLabelActive}>홈</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push("/kakaomap")}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.push("/kakaomap")}
+        >
           <Ionicons name="map-outline" size={24} color="#4A5568" />
           <Text style={styles.navLabel}>지도</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push("/mypage")}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.push("/mypage")}
+        >
           <Ionicons name="person-outline" size={24} color="#4A5568" />
           <Text style={styles.navLabel}>마이</Text>
         </TouchableOpacity>
@@ -317,7 +353,10 @@ export default function HomeScreen() {
         visible={isFoodModalVisible}
         onRequestClose={() => setIsFoodModalVisible(false)}
       >
-        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
           <View style={styles.modalContent}>
             {/* 핸들 바 */}
             <View style={styles.modalHandle} />
@@ -325,9 +364,17 @@ export default function HomeScreen() {
             <View style={styles.modalHeader}>
               <View>
                 <Text style={styles.modalTitle}>식단 기록</Text>
-                <Text style={styles.modalSub}>AI가 칼로리를 자동 분석합니다</Text>
+                <Text style={styles.modalSub}>
+                  AI가 칼로리를 자동 분석합니다
+                </Text>
               </View>
-              <TouchableOpacity onPress={() => { setIsFoodModalVisible(false); setAiResult(null); setFoodSearchText(""); }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setIsFoodModalVisible(false);
+                  setAiResult(null);
+                  setFoodSearchText("");
+                }}
+              >
                 <Ionicons name="close-circle" size={28} color="#4A5568" />
               </TouchableOpacity>
             </View>
@@ -342,7 +389,10 @@ export default function HomeScreen() {
                 onSubmitEditing={handleSearchFood}
                 returnKeyType="search"
               />
-              <TouchableOpacity style={styles.searchButton} onPress={handleSearchFood}>
+              <TouchableOpacity
+                style={styles.searchButton}
+                onPress={handleSearchFood}
+              >
                 <Ionicons name="search" size={18} color="white" />
               </TouchableOpacity>
             </View>
@@ -351,28 +401,60 @@ export default function HomeScreen() {
               {isSearching ? (
                 <>
                   <ActivityIndicator size="large" color="#00C896" />
-                  <Text style={[styles.aiHintText, { marginTop: 12 }]}>AI가 분석 중입니다...</Text>
+                  <Text style={[styles.aiHintText, { marginTop: 12 }]}>
+                    AI가 분석 중입니다...
+                  </Text>
                 </>
               ) : aiResult ? (
                 <>
                   <View style={styles.resultHeader}>
                     <Ionicons name="fast-food" size={20} color="#00C896" />
-                    <Text style={styles.aiResultFoodName} numberOfLines={1}>{aiResult.foodName}</Text>
+                    <Text style={styles.aiResultFoodName} numberOfLines={1}>
+                      {aiResult.foodName}
+                    </Text>
                   </View>
-                  <Text style={styles.aiResultServing}>{aiResult.servingSize}</Text>
+                  <Text style={styles.aiResultServing}>
+                    {aiResult.servingSize}
+                  </Text>
                   <View style={styles.calorieHighlight}>
-                    <Text style={styles.calorieHighlightNum}>{Math.round(aiResult.calories)}</Text>
+                    <Text style={styles.calorieHighlightNum}>
+                      {Math.round(aiResult.calories)}
+                    </Text>
                     <Text style={styles.calorieHighlightUnit}>kcal</Text>
                   </View>
                   <View style={styles.aiNutrientRow}>
                     {[
-                      { label: "탄수화물", value: Math.round(aiResult.carbs), color: "#60A5FA" },
-                      { label: "단백질", value: Math.round(aiResult.protein), color: "#00C896" },
-                      { label: "지방", value: Math.round(aiResult.fat), color: "#F97316" },
+                      {
+                        label: "탄수화물",
+                        value: Math.round(aiResult.carbs),
+                        color: "#60A5FA",
+                      },
+                      {
+                        label: "단백질",
+                        value: Math.round(aiResult.protein),
+                        color: "#00C896",
+                      },
+                      {
+                        label: "지방",
+                        value: Math.round(aiResult.fat),
+                        color: "#F97316",
+                      },
                     ].map((n, i) => (
                       <View key={i} style={styles.aiNutrientItem}>
-                        <View style={[styles.nutrientBar, { backgroundColor: n.color + "33" }]}>
-                          <Text style={[styles.nutrientBarValue, { color: n.color }]}>{n.value}g</Text>
+                        <View
+                          style={[
+                            styles.nutrientBar,
+                            { backgroundColor: n.color + "33" },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.nutrientBarValue,
+                              { color: n.color },
+                            ]}
+                          >
+                            {n.value}g
+                          </Text>
                         </View>
                         <Text style={styles.aiNutrientLabel}>{n.label}</Text>
                       </View>
@@ -384,13 +466,18 @@ export default function HomeScreen() {
                   <View style={styles.aiHintIcon}>
                     <Ionicons name="sparkles" size={28} color="#00C896" />
                   </View>
-                  <Text style={styles.aiHintText}>음식 이름을 검색하면{"\n"}AI가 칼로리를 분석해 드립니다</Text>
+                  <Text style={styles.aiHintText}>
+                    음식 이름을 검색하면{"\n"}AI가 칼로리를 분석해 드립니다
+                  </Text>
                 </>
               )}
             </View>
 
             <TouchableOpacity
-              style={[styles.saveFoodButton, (!aiResult || isSaving) && styles.saveFoodButtonDisabled]}
+              style={[
+                styles.saveFoodButton,
+                (!aiResult || isSaving) && styles.saveFoodButtonDisabled,
+              ]}
               onPress={handleSaveFood}
               disabled={!aiResult || isSaving}
             >
@@ -398,7 +485,12 @@ export default function HomeScreen() {
                 <ActivityIndicator color="white" />
               ) : (
                 <>
-                  <Ionicons name="checkmark" size={18} color="#fff" style={{ marginRight: 6 }} />
+                  <Ionicons
+                    name="checkmark"
+                    size={18}
+                    color="#fff"
+                    style={{ marginRight: 6 }}
+                  />
                   <Text style={styles.saveFoodButtonText}>기록 저장하기</Text>
                 </>
               )}

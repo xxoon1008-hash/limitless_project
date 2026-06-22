@@ -30,13 +30,17 @@ const KAKAO_MAP_HTML = (withGeolocation: boolean) => `
     };
     var map = new kakao.maps.Map(container, options);
 
-    ${withGeolocation ? `
+    ${
+      withGeolocation
+        ? `
     navigator.geolocation && navigator.geolocation.getCurrentPosition(function (pos) {
       var currentCenter = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
       map.setCenter(currentCenter);
       new kakao.maps.Marker({ map: map, position: currentCenter, title: "현재 위치" });
     });
-    ` : ""}
+    `
+        : ""
+    }
   </script>
 </body>
 </html>
@@ -48,7 +52,10 @@ function KakaoMapWeb() {
   useEffect(() => {
     const loadScript = (): Promise<void> =>
       new Promise((resolve) => {
-        if ((window as any).kakao?.maps) { resolve(); return; }
+        if ((window as any).kakao?.maps) {
+          resolve();
+          return;
+        }
         const script = document.createElement("script");
         script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false`;
         script.onload = () => (window as any).kakao.maps.load(resolve);
@@ -59,13 +66,23 @@ function KakaoMapWeb() {
       if (!mapRef.current) return;
       const kakao = (window as any).kakao;
       const defaultCenter = new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG);
-      const map = new kakao.maps.Map(mapRef.current, { center: defaultCenter, level: 3 });
+      const map = new kakao.maps.Map(mapRef.current, {
+        center: defaultCenter,
+        level: 3,
+      });
 
       requestAnimationFrame(() => {
         navigator.geolocation?.getCurrentPosition((pos) => {
-          const currentCenter = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+          const currentCenter = new kakao.maps.LatLng(
+            pos.coords.latitude,
+            pos.coords.longitude,
+          );
           map.setCenter(currentCenter);
-          new kakao.maps.Marker({ map, position: currentCenter, title: "현재 위치" });
+          new kakao.maps.Marker({
+            map,
+            position: currentCenter,
+            title: "현재 위치",
+          });
         });
       });
     });
@@ -74,7 +91,13 @@ function KakaoMapWeb() {
   return (
     <div
       ref={mapRef}
-      style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "absolute",
+        top: 0,
+        left: 0,
+      }}
     />
   );
 }
@@ -104,7 +127,12 @@ export default function KakaoMap() {
         }
       >
         <TouchableOpacity
-          style={{ width: 44, height: 44, justifyContent: "center", alignItems: "center" }}
+          style={{
+            width: 44,
+            height: 44,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
           onPress={() => router.push("/main")}
           activeOpacity={0.7}
         >
