@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -14,7 +13,6 @@ import {
   View,
 } from "react-native";
 import WorkoutCalendar from "../components/WorkoutCalendar";
-import { FoodCalorieResult, analyzeFoodCalories } from "../services/groq";
 import { styles } from "../style/main_styles";
 import { showAlert } from "../utils/alert";
 
@@ -61,8 +59,6 @@ export default function HomeScreen() {
   // 음식 검색 팝업 상태 관리
   const [isFoodModalVisible, setIsFoodModalVisible] = useState(false);
   const [foodSearchText, setFoodSearchText] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [aiResult, setAiResult] = useState<FoodCalorieResult | null>(null);
 
   const [calorieData, setCalorieData] = useState<{
     [key: string]: { intake: number; burned: number };
@@ -107,35 +103,13 @@ export default function HomeScreen() {
     }
   };
 
-  const handleSearchFood = async () => {
+  // 음식 검색 버튼 눌렀을 때 실행될 함수
+  const handleSearchFood = () => {
     if (!foodSearchText.trim()) {
       showAlert("검색할 음식을 입력해 주세요.");
       return;
     }
-    setIsSearching(true);
-    setAiResult(null);
-    try {
-      const result = await analyzeFoodCalories(foodSearchText.trim());
-      setAiResult(result);
-    } catch (e: any) {
-      showAlert(e.message || "칼로리 분석에 실패했습니다.");
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleSaveFood = () => {
-    if (!aiResult) return;
-    setCalorieData((prev) => ({
-      ...prev,
-      [selectedDate]: {
-        intake: (prev[selectedDate]?.intake || 0) + aiResult.calories,
-        burned: prev[selectedDate]?.burned || 0,
-      },
-    }));
-    setFoodSearchText("");
-    setAiResult(null);
-    setIsFoodModalVisible(false);
+    console.log("검색한 음식:", foodSearchText);
   };
 
   return (
@@ -244,13 +218,7 @@ export default function HomeScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>식단 기록하기</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setIsFoodModalVisible(false);
-                  setAiResult(null);
-                  setFoodSearchText("");
-                }}
-              >
+              <TouchableOpacity onPress={() => setIsFoodModalVisible(false)}>
                 <Ionicons name="close" size={28} color="#A0A0A0" />
               </TouchableOpacity>
             </View>
@@ -272,73 +240,21 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.aiResultBox}>
-              {isSearching ? (
-                <>
-                  <ActivityIndicator
-                    size="large"
-                    color="#FF5252"
-                    style={{ marginBottom: 10 }}
-                  />
-                  <Text style={styles.aiResultText}>AI가 분석 중입니다...</Text>
-                </>
-              ) : aiResult ? (
-                <>
-                  <Text style={styles.aiResultFoodName}>
-                    {aiResult.foodName}
-                  </Text>
-                  <Text style={styles.aiResultServing}>
-                    {aiResult.servingSize}
-                  </Text>
-                  <View style={styles.aiResultCalorieRow}>
-                    <Text style={styles.aiResultCalorieValue}>
-                      {aiResult.calories}
-                    </Text>
-                    <Text style={styles.aiResultCalorieUnit}> kcal</Text>
-                  </View>
-                  <View style={styles.aiNutrientRow}>
-                    <View style={styles.aiNutrientItem}>
-                      <Text style={styles.aiNutrientLabel}>탄수화물</Text>
-                      <Text style={styles.aiNutrientValue}>
-                        {aiResult.carbs}g
-                      </Text>
-                    </View>
-                    <View style={styles.aiNutrientItem}>
-                      <Text style={styles.aiNutrientLabel}>단백질</Text>
-                      <Text style={styles.aiNutrientValue}>
-                        {aiResult.protein}g
-                      </Text>
-                    </View>
-                    <View style={styles.aiNutrientItem}>
-                      <Text style={styles.aiNutrientLabel}>지방</Text>
-                      <Text style={styles.aiNutrientValue}>
-                        {aiResult.fat}g
-                      </Text>
-                    </View>
-                  </View>
-                </>
-              ) : (
-                <>
-                  <Ionicons
-                    name="sparkles"
-                    size={24}
-                    color="#FF5252"
-                    style={{ marginBottom: 10 }}
-                  />
-                  <Text style={styles.aiResultText}>
-                    음식을 검색하시면 AI가 평균 칼로리를{"\n"}자동으로 분석해
-                    드립니다!
-                  </Text>
-                </>
-              )}
+              <Ionicons
+                name="sparkles"
+                size={24}
+                color="#FF5252"
+                style={{ marginBottom: 10 }}
+              />
+              <Text style={styles.aiResultText}>
+                음식을 검색하시면 AI가 평균 칼로리를{"\n"}자동으로 분석해
+                드립니다!
+              </Text>
             </View>
 
             <TouchableOpacity
-              style={[
-                styles.saveFoodButton,
-                !aiResult && styles.saveFoodButtonDisabled,
-              ]}
-              onPress={handleSaveFood}
-              disabled={!aiResult}
+              style={styles.saveFoodButton}
+              onPress={() => setIsFoodModalVisible(false)}
             >
               <Text style={styles.saveFoodButtonText}>기록 저장하기</Text>
             </TouchableOpacity>
