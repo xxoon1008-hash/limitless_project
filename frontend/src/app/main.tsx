@@ -14,10 +14,7 @@ import {
   View,
 } from "react-native";
 import WorkoutCalendar from "../components/WorkoutCalendar";
-import {
-  FoodCalorieResult,
-  analyzeFoodCalories,
-} from "../services/groq";
+import { FoodCalorieResult, analyzeFoodCalories } from "../services/groq";
 import { styles } from "../style/main_styles";
 import { showAlert } from "../utils/alert";
 
@@ -247,11 +244,13 @@ export default function HomeScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>식단 기록하기</Text>
-              <TouchableOpacity onPress={() => {
-                setIsFoodModalVisible(false);
-                setAiResult(null);
-                setFoodSearchText("");
-              }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setIsFoodModalVisible(false);
+                  setAiResult(null);
+                  setFoodSearchText("");
+                }}
+              >
                 <Ionicons name="close" size={28} color="#A0A0A0" />
               </TouchableOpacity>
             </View>
@@ -284,8 +283,12 @@ export default function HomeScreen() {
                 </>
               ) : aiResult ? (
                 <>
-                  <Text style={styles.aiResultFoodName}>{aiResult.foodName}</Text>
-                  <Text style={styles.aiResultServing}>{aiResult.servingSize}</Text>
+                  <Text style={styles.aiResultFoodName}>
+                    {aiResult.foodName}
+                  </Text>
+                  <Text style={styles.aiResultServing}>
+                    {aiResult.servingSize}
+                  </Text>
                   <View style={styles.aiResultCalorieRow}>
                     <Text style={styles.aiResultCalorieValue}>
                       {aiResult.calories}
@@ -295,15 +298,21 @@ export default function HomeScreen() {
                   <View style={styles.aiNutrientRow}>
                     <View style={styles.aiNutrientItem}>
                       <Text style={styles.aiNutrientLabel}>탄수화물</Text>
-                      <Text style={styles.aiNutrientValue}>{aiResult.carbs}g</Text>
+                      <Text style={styles.aiNutrientValue}>
+                        {aiResult.carbs}g
+                      </Text>
                     </View>
                     <View style={styles.aiNutrientItem}>
                       <Text style={styles.aiNutrientLabel}>단백질</Text>
-                      <Text style={styles.aiNutrientValue}>{aiResult.protein}g</Text>
+                      <Text style={styles.aiNutrientValue}>
+                        {aiResult.protein}g
+                      </Text>
                     </View>
                     <View style={styles.aiNutrientItem}>
                       <Text style={styles.aiNutrientLabel}>지방</Text>
-                      <Text style={styles.aiNutrientValue}>{aiResult.fat}g</Text>
+                      <Text style={styles.aiNutrientValue}>
+                        {aiResult.fat}g
+                      </Text>
                     </View>
                   </View>
                 </>
