@@ -70,11 +70,37 @@ public class FoodController {
                 return ResponseEntity.internalServerError().body(Map.of("error", "AI 응답 파싱 실패"));
             }
 
-            JsonNode foodData = objectMapper.readTree(content.substring(start, end));
+            JsonNode ai = objectMapper.readTree(content.substring(start, end));
+
+            // AI가 snake_case/camelCase 어느 쪽으로 반환해도 프론트가 읽을 수 있도록 명시적으로 매핑
+            Map<String, Object> foodData = Map.of(
+                    "foodName",    firstText(ai, "foodName", "food_name", "name"),
+                    "calories",    firstNum(ai, "calories", "calorie", "kcal"),
+                    "protein",     firstNum(ai, "protein"),
+                    "carbs",       firstNum(ai, "carbs", "carbohydrates", "carbohydrate"),
+                    "fat",         firstNum(ai, "fat", "fats"),
+                    "servingSize", firstText(ai, "servingSize", "serving_size", "serving")
+            );
             return ResponseEntity.ok(foodData);
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", "칼로리 분석 실패: " + e.getMessage()));
         }
+    }
+
+    private String firstText(JsonNode node, String... keys) {
+        for (String key : keys) {
+            JsonNode n = node.get(key);
+            if (n != null && !n.isNull()) return n.asText();
+        }
+        return "";
+    }
+
+    private double firstNum(JsonNode node, String... keys) {
+        for (String key : keys) {
+            JsonNode n = node.get(key);
+            if (n != null && !n.isNull() && n.isNumber()) return n.asDouble();
+        }
+        return 0;
     }
 }
