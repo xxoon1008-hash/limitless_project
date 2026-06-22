@@ -28,8 +28,11 @@ public class FoodController {
     private static final String GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
     private static final String SYSTEM_PROMPT =
-            "You are a nutrition expert. When given a food name (in any language), " +
-            "respond ONLY with a valid JSON object in this exact format with no extra text: " +
+            "You are a nutrition expert. Your ONLY job is to analyze food items. " +
+            "First, determine if the input is a real food or beverage name. " +
+            "If the input is NOT a food or beverage (e.g. a person's name, place, object, random text, question, or anything that is not edible), " +
+            "respond ONLY with this exact JSON: {\"error\":\"not_food\"} — no other text. " +
+            "If it IS a food or beverage, respond ONLY with a valid JSON object in this exact format with no extra text: " +
             "{\"foodName\":\"음식 이름 (한국어)\",\"calories\":숫자,\"protein\":숫자,\"carbs\":숫자,\"fat\":숫자,\"servingSize\":\"1인분 기준\"} " +
             "All nutrient values are in grams (g), calories in kcal. Base on a typical single serving.";
 
@@ -85,6 +88,10 @@ public class FoodController {
             }
 
             JsonNode ai = objectMapper.readTree(content.substring(start, end));
+
+            if (ai.has("error") && "not_food".equals(ai.get("error").asText())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "음식 이름을 입력해 주세요."));
+            }
 
             Map<String, Object> foodData = Map.of(
                     "foodName",    firstText(ai, "foodName", "food_name", "name"),
