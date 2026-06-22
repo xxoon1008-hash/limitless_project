@@ -28,7 +28,7 @@ public class FoodController {
             All nutrient values are in grams (g), calories in kcal. Base on a typical single serving.
             """;
 
-    @Value("${groq.api-key}")
+    @Value("${groq.api-key:}")
     private String groqApiKey;
 
     private final RestClient restClient;
