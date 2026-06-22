@@ -1,7 +1,13 @@
 package com.example.app_project.controller;
 
+import com.example.app_project.domain.FoodRecord;
+import com.example.app_project.domain.User;
+import com.example.app_project.jwt.JwtTokenProvider;
+import com.example.app_project.repository.FoodRecordRepository;
+import com.example.app_project.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,10 +16,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/food")
+@RequiredArgsConstructor
 public class FoodController {
 
     private static final String GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -24,12 +33,17 @@ public class FoodController {
             "{\"foodName\":\"음식 이름 (한국어)\",\"calories\":숫자,\"protein\":숫자,\"carbs\":숫자,\"fat\":숫자,\"servingSize\":\"1인분 기준\"} " +
             "All nutrient values are in grams (g), calories in kcal. Base on a typical single serving.";
 
+    private final FoodRecordRepository foodRecordRepository;
+    private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+
     @Value("${groq.api-key:}")
     private String groqApiKey;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    // AI 칼로리 분석
     @PostMapping("/calories")
     public ResponseEntity<?> getCalories(@RequestBody Map<String, String> request) {
         String query = request.get("query");
@@ -72,7 +86,6 @@ public class FoodController {
 
             JsonNode ai = objectMapper.readTree(content.substring(start, end));
 
-            // AI가 snake_case/camelCase 어느 쪽으로 반환해도 프론트가 읽을 수 있도록 명시적으로 매핑
             Map<String, Object> foodData = Map.of(
                     "foodName",    firstText(ai, "foodName", "food_name", "name"),
                     "calories",    firstNum(ai, "calories", "calorie", "kcal"),
@@ -86,6 +99,61 @@ public class FoodController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", "칼로리 분석 실패: " + e.getMessage()));
         }
+    }
+
+    // 식단 기록 저장
+    @PostMapping("/record")
+    public ResponseEntity<?> saveRecord(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, Object> request) {
+        String email = jwtTokenProvider.getEmailFromToken(token.replace("Bearer ", ""));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+
+        String dateStr = (String) request.get("date");
+        LocalDate date = (dateStr != null) ? LocalDate.parse(dateStr) : LocalDate.now();
+
+        FoodRecord record = FoodRecord.builder()
+                .user(user)
+                .recordedAt(date)
+                .foodName((String) request.get("foodName"))
+                .calories(toDouble(request.get("calories")))
+                .protein(toDouble(request.get("protein")))
+                .carbs(toDouble(request.get("carbs")))
+                .fat(toDouble(request.get("fat")))
+                .servingSize((String) request.get("servingSize"))
+                .build();
+
+        foodRecordRepository.save(record);
+        return ResponseEntity.ok(Map.of("message", "저장 완료"));
+    }
+
+    // 날짜별 섭취 칼로리 합계 조회
+    @GetMapping("/record")
+    public ResponseEntity<?> getRecord(
+            @RequestHeader("Authorization") String token,
+            @RequestParam String date) {
+        String email = jwtTokenProvider.getEmailFromToken(token.replace("Bearer ", ""));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+
+        LocalDate localDate = LocalDate.parse(date);
+        List<FoodRecord> records = foodRecordRepository.findByUserAndRecordedAt(user, localDate);
+
+        double totalCalories = records.stream().mapToDouble(FoodRecord::getCalories).sum();
+
+        return ResponseEntity.ok(Map.of(
+                "date", date,
+                "totalCalories", (int) totalCalories,
+                "records", records.stream().map(r -> Map.of(
+                        "foodName", r.getFoodName(),
+                        "calories", r.getCalories(),
+                        "protein", r.getProtein(),
+                        "carbs", r.getCarbs(),
+                        "fat", r.getFat(),
+                        "servingSize", r.getServingSize() != null ? r.getServingSize() : ""
+                )).toList()
+        ));
     }
 
     private String firstText(JsonNode node, String... keys) {
@@ -102,5 +170,11 @@ public class FoodController {
             if (n != null && !n.isNull() && n.isNumber()) return n.asDouble();
         }
         return 0;
+    }
+
+    private double toDouble(Object val) {
+        if (val == null) return 0;
+        if (val instanceof Number) return ((Number) val).doubleValue();
+        try { return Double.parseDouble(val.toString()); } catch (Exception e) { return 0; }
     }
 }

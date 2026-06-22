@@ -1,9 +1,16 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#262626" },
   scrollContent: { paddingBottom: 100 },
-  header: { paddingTop: 60, paddingHorizontal: 20, marginBottom: 20, alignItems: "center" },
+  header: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    alignItems: "center",
+  },
   headerTitle: {
     fontSize: 32,
     fontWeight: "900",
@@ -34,7 +41,12 @@ export const styles = StyleSheet.create({
   },
   completedButton: { backgroundColor: "#4CAF50" },
   attendanceText: { color: "white", fontSize: 18, fontWeight: "bold" },
-  message: { color: "#FF5252", marginTop: 12, fontSize: 14, fontWeight: "600" },
+  message: {
+    color: "#FF5252",
+    marginTop: 12,
+    fontSize: 14,
+    fontWeight: "600",
+  },
   calorieBox: {
     marginHorizontal: 20,
     padding: 20,
@@ -56,7 +68,12 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   infoLabel: { color: "#A0A0A0", fontSize: 12, marginTop: 8 },
-  infoValue: { color: "white", fontSize: 20, fontWeight: "bold", marginTop: 4 },
+  infoValue: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 4,
+  },
   unit: { fontSize: 12, color: "#A0A0A0" },
   bottomNav: {
     position: "absolute",
@@ -69,6 +86,8 @@ export const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#333",
   },
+
+  // ── 모달 ──────────────────────────────────────────
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.7)",
@@ -78,118 +97,132 @@ export const styles = StyleSheet.create({
     backgroundColor: "#1c1c1c",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    padding: 25,
-    paddingBottom: 40,
-    minHeight: 400,
+    padding: 20,
+    paddingBottom: 36,
+    maxHeight: SCREEN_HEIGHT * 0.75,
   },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#ffffff",
   },
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   searchInput: {
     flex: 1,
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     color: "#fff",
-    paddingHorizontal: 15,
-    paddingVertical: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     borderRadius: 12,
-    fontSize: 16,
+    fontSize: 14,
     marginRight: 10,
   },
   searchButton: {
     backgroundColor: "#FF5252",
-    padding: 14,
+    padding: 13,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
   },
+
+  // ── AI 결과 박스 ──────────────────────────────────
   aiResultBox: {
-    flex: 1,
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.1)",
     borderStyle: "dashed",
-    marginBottom: 20,
+    marginBottom: 16,
+    minHeight: 140,
   },
   aiResultText: {
     color: "#A0A0A0",
     textAlign: "center",
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 13,
+    lineHeight: 20,
   },
   aiResultFoodName: {
     color: "#fff",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 4,
+    marginBottom: 2,
+    textAlign: "center",
   },
   aiResultServing: {
     color: "#A0A0A0",
-    fontSize: 13,
-    marginBottom: 12,
+    fontSize: 12,
+    marginBottom: 10,
   },
   aiResultCalorieRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    marginBottom: 16,
+    marginBottom: 14,
   },
   aiResultCalorieValue: {
     color: "#FF5252",
-    fontSize: 40,
+    fontSize: 36,
     fontWeight: "900",
+    lineHeight: 40,
   },
   aiResultCalorieUnit: {
     color: "#FF5252",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   aiNutrientRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "center",
+    alignItems: "center",
     width: "100%",
   },
   aiNutrientItem: {
     alignItems: "center",
+    flex: 1,
+  },
+  aiNutrientDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: "rgba(255,255,255,0.15)",
   },
   aiNutrientLabel: {
     color: "#A0A0A0",
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: 11,
+    marginBottom: 3,
   },
   aiNutrientValue: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "bold",
   },
+
+  // ── 저장 버튼 ─────────────────────────────────────
   saveFoodButton: {
     backgroundColor: "#4CAF50",
-    paddingVertical: 16,
+    paddingVertical: 15,
     borderRadius: 12,
     alignItems: "center",
   },
   saveFoodButtonDisabled: {
-    backgroundColor: "#555",
+    backgroundColor: "#444",
   },
   saveFoodButtonText: {
     color: "white",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
 });
