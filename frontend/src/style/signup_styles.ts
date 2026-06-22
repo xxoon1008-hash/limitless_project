@@ -29,7 +29,7 @@ export const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.8)",
   },
   submitButton: {
-    backgroundColor: "#ff5252",
+    backgroundColor: "#00C896",
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",

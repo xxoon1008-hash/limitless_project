@@ -31,7 +31,7 @@ export const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
   pointText: {
-    color: "#ff5252",
+    color: "#00C896",
     fontWeight: "900",
   },
   contentContainer: { width: "100%" },
@@ -55,7 +55,7 @@ export const styles = StyleSheet.create({
 
   buttonContainer: {},
   loginButton: {
-    backgroundColor: "#ff5252",
+    backgroundColor: "#00C896",
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",

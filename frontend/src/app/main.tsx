@@ -32,6 +32,13 @@ const getTodayDateString = () => {
   return `${year}-${month}-${day}`;
 };
 
+const formatDisplayDate = (dateStr: string) => {
+  const [year, month, day] = dateStr.split("-");
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+  return `${month}월 ${day}일 (${weekdays[date.getDay()]})`;
+};
+
 export default function HomeScreen() {
   const [attendanceDates, setAttendanceDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState(getTodayDateString());
@@ -67,7 +74,6 @@ export default function HomeScreen() {
     loadAttendances();
   }, []);
 
-  // 날짜 변경 시 해당 날짜의 섭취 칼로리 DB에서 로드
   const loadCalorieForDate = useCallback(async (date: string) => {
     const token = await AsyncStorage.getItem("jwt_token");
     if (!token) return;
@@ -97,20 +103,15 @@ export default function HomeScreen() {
   const handleAttendance = async () => {
     if (isCheckingAttendance) return;
     const today = getTodayDateString();
-
     if (selectedDate !== today) {
       showAlert("출석 체크는 오늘 날짜만 가능합니다.");
       setSelectedDate(today);
       return;
     }
-
     if (attendanceDates.includes(today)) return;
 
     const token = await AsyncStorage.getItem("jwt_token");
-    if (!token) {
-      setMessage("로그인이 필요합니다.");
-      return;
-    }
+    if (!token) { setMessage("로그인이 필요합니다."); return; }
 
     setIsCheckingAttendance(true);
     try {
@@ -119,14 +120,12 @@ export default function HomeScreen() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-
       if (res.ok) {
         setAttendanceDates((prev) => [...prev, today]);
       } else {
         setMessage(data.message || "출석 체크에 실패했습니다.");
       }
     } catch (e) {
-      console.error(e);
       setMessage("서버와 통신 중 오류가 발생했습니다.");
     } finally {
       setIsCheckingAttendance(false);
@@ -134,10 +133,7 @@ export default function HomeScreen() {
   };
 
   const handleSearchFood = async () => {
-    if (!foodSearchText.trim()) {
-      showAlert("검색할 음식을 입력해 주세요.");
-      return;
-    }
+    if (!foodSearchText.trim()) { showAlert("검색할 음식을 입력해 주세요."); return; }
     setIsSearching(true);
     setAiResult(null);
     try {
@@ -154,15 +150,11 @@ export default function HomeScreen() {
     if (!aiResult) return;
     const token = await AsyncStorage.getItem("jwt_token");
     if (!token) return;
-
     setIsSaving(true);
     try {
       const res = await fetch(`${API_URL}/api/food/record`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           date: selectedDate,
           foodName: aiResult.foodName,
@@ -173,10 +165,7 @@ export default function HomeScreen() {
           servingSize: aiResult.servingSize,
         }),
       });
-
       if (!res.ok) throw new Error("저장 실패");
-
-      // DB 저장 후 해당 날짜 칼로리 다시 로드
       await loadCalorieForDate(selectedDate);
       setFoodSearchText("");
       setAiResult(null);
@@ -188,110 +177,158 @@ export default function HomeScreen() {
     }
   };
 
+  const isAttendedToday = attendanceDates.includes(getTodayDateString());
+  const intake = calorieData[selectedDate]?.intake || 0;
+  const burned = calorieData[selectedDate]?.burned || 0;
+  const goalCalories = 2000;
+  const intakePercent = Math.min((intake / goalCalories) * 100, 100);
+
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
+        {/* ── 헤더 ── */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Limitless</Text>
+          <View>
+            <Text style={styles.headerGreeting}>안녕하세요 👋</Text>
+            <Text style={styles.headerTitle}>Limitless</Text>
+          </View>
+          <View style={styles.headerBadge}>
+            <Ionicons name="fitness-outline" size={22} color="#00C896" />
+          </View>
         </View>
 
-        <View style={styles.calendarBox}>
-          <WorkoutCalendar
-            attendanceDates={attendanceDates}
-            onDayPress={(day: any) => setSelectedDate(day.dateString)}
-            selectedDate={selectedDate}
-          />
+        {/* ── 날짜 + 출석 뱃지 ── */}
+        <View style={styles.dateRow}>
+          <Text style={styles.dateText}>{formatDisplayDate(selectedDate)}</Text>
+          {isAttendedToday && (
+            <View style={styles.attendedBadge}>
+              <Ionicons name="checkmark-circle" size={14} color="#00C896" />
+              <Text style={styles.attendedBadgeText}>출석 완료</Text>
+            </View>
+          )}
         </View>
 
-        <View style={styles.attendanceSection}>
-          <TouchableOpacity
-            style={[
-              styles.attendanceButton,
-              attendanceDates.includes(getTodayDateString()) &&
-                styles.completedButton,
-            ]}
-            onPress={handleAttendance}
-            disabled={isCheckingAttendance}
-          >
-            <Ionicons
-              name="checkmark-circle-outline"
-              size={24}
-              color="white"
-              style={{ marginRight: 8 }}
-            />
-            <Text style={styles.attendanceText}>
-              {attendanceDates.includes(getTodayDateString())
-                ? "출석 완료"
-                : "운동 완료 출석 체크"}
-            </Text>
-          </TouchableOpacity>
-          {message ? <Text style={styles.message}>{message}</Text> : null}
-        </View>
-
-        <View style={styles.calorieBox}>
-          <Text style={styles.sectionTitle}>기록 데이터</Text>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={styles.infoCard}
-              activeOpacity={0.8}
-              onPress={() => setIsFoodModalVisible(true)}
-            >
-              <Ionicons name="fast-food-outline" size={30} color="#FF5252" />
-              <Text style={styles.infoLabel}>섭취 칼로리</Text>
-              <Text style={styles.infoValue}>
-                {calorieData[selectedDate]?.intake || 0}{" "}
-                <Text style={styles.unit}>kcal</Text>
-              </Text>
+        {/* ── 칼로리 요약 카드 ── */}
+        <View style={styles.calorieCard}>
+          <View style={styles.calorieCardTop}>
+            <View>
+              <Text style={styles.calorieCardLabel}>오늘 섭취 칼로리</Text>
+              <View style={styles.calorieValueRow}>
+                <Text style={styles.calorieValueBig}>{Math.round(intake)}</Text>
+                <Text style={styles.calorieUnit}> / {goalCalories} kcal</Text>
+              </View>
+            </View>
+            <TouchableOpacity style={styles.addFoodBtn} onPress={() => setIsFoodModalVisible(true)}>
+              <Ionicons name="add" size={22} color="#fff" />
             </TouchableOpacity>
+          </View>
 
-            <View style={styles.infoCard}>
-              <Ionicons name="flame-outline" size={30} color="#FF5252" />
-              <Text style={styles.infoLabel}>소비 칼로리</Text>
-              <Text style={styles.infoValue}>
-                {calorieData[selectedDate]?.burned || 0}{" "}
-                <Text style={styles.unit}>kcal</Text>
-              </Text>
+          {/* 진행 바 */}
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: `${intakePercent}%` as any }]} />
+          </View>
+
+          {/* 영양소 요약 */}
+          <View style={styles.macroRow}>
+            <View style={styles.macroItem}>
+              <View style={[styles.macroDot, { backgroundColor: "#F97316" }]} />
+              <Text style={styles.macroLabel}>소비</Text>
+              <Text style={styles.macroValue}>{Math.round(burned)} kcal</Text>
+            </View>
+            <View style={styles.macroItem}>
+              <View style={[styles.macroDot, { backgroundColor: "#00C896" }]} />
+              <Text style={styles.macroLabel}>목표</Text>
+              <Text style={styles.macroValue}>{goalCalories} kcal</Text>
+            </View>
+            <View style={styles.macroItem}>
+              <View style={[styles.macroDot, { backgroundColor: "#60A5FA" }]} />
+              <Text style={styles.macroLabel}>잔여</Text>
+              <Text style={styles.macroValue}>{Math.max(goalCalories - intake, 0)} kcal</Text>
             </View>
           </View>
         </View>
+
+        {/* ── 출석 버튼 ── */}
+        <TouchableOpacity
+          style={[styles.attendanceButton, isAttendedToday && styles.attendanceButtonDone]}
+          onPress={handleAttendance}
+          disabled={isCheckingAttendance || isAttendedToday}
+          activeOpacity={0.85}
+        >
+          <Ionicons
+            name={isAttendedToday ? "checkmark-circle" : "barbell-outline"}
+            size={22}
+            color="#fff"
+            style={{ marginRight: 10 }}
+          />
+          <View>
+            <Text style={styles.attendanceButtonTitle}>
+              {isAttendedToday ? "오늘 운동 완료!" : "운동 완료 출석 체크"}
+            </Text>
+            <Text style={styles.attendanceButtonSub}>
+              {isAttendedToday
+                ? `이번 달 ${attendanceDates.length}일 출석`
+                : "운동을 마쳤다면 체크하세요"}
+            </Text>
+          </View>
+          {!isAttendedToday && (
+            <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.5)" style={{ marginLeft: "auto" }} />
+          )}
+        </TouchableOpacity>
+        {message ? <Text style={styles.errorText}>{message}</Text> : null}
+
+        {/* ── 달력 ── */}
+        <View style={styles.calendarSection}>
+          <Text style={styles.sectionTitle}>출석 캘린더</Text>
+          <Text style={styles.sectionSub}>이번 달 {attendanceDates.length}일 출석</Text>
+          <View style={styles.calendarBox}>
+            <WorkoutCalendar
+              attendanceDates={attendanceDates}
+              onDayPress={(day: any) => setSelectedDate(day.dateString)}
+              selectedDate={selectedDate}
+            />
+          </View>
+        </View>
+
       </ScrollView>
 
+      {/* ── 하단 탭 ── */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity>
-          <Ionicons name="home" size={28} color="#FF5252" />
+        <TouchableOpacity style={styles.navItem}>
+          <View style={styles.navActiveIndicator} />
+          <Ionicons name="home" size={24} color="#00C896" />
+          <Text style={styles.navLabelActive}>홈</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push("/kakaomap")}>
-          <Ionicons name="map-outline" size={28} color="#A0A0A0" />
+        <TouchableOpacity style={styles.navItem} onPress={() => router.push("/kakaomap")}>
+          <Ionicons name="map-outline" size={24} color="#4A5568" />
+          <Text style={styles.navLabel}>지도</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push("/mypage")}>
-          <Ionicons name="person-outline" size={28} color="#A0A0A0" />
+        <TouchableOpacity style={styles.navItem} onPress={() => router.push("/mypage")}>
+          <Ionicons name="person-outline" size={24} color="#4A5568" />
+          <Text style={styles.navLabel}>마이</Text>
         </TouchableOpacity>
       </View>
 
+      {/* ── 식단 기록 모달 ── */}
       <Modal
         animationType="slide"
-        transparent={true}
+        transparent
         visible={isFoodModalVisible}
         onRequestClose={() => setIsFoodModalVisible(false)}
       >
-        <KeyboardAvoidingView
-          style={styles.modalOverlay}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
+        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === "ios" ? "padding" : "height"}>
           <View style={styles.modalContent}>
+            {/* 핸들 바 */}
+            <View style={styles.modalHandle} />
+
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>식단 기록하기</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setIsFoodModalVisible(false);
-                  setAiResult(null);
-                  setFoodSearchText("");
-                }}
-              >
-                <Ionicons name="close" size={28} color="#A0A0A0" />
+              <View>
+                <Text style={styles.modalTitle}>식단 기록</Text>
+                <Text style={styles.modalSub}>AI가 칼로리를 자동 분석합니다</Text>
+              </View>
+              <TouchableOpacity onPress={() => { setIsFoodModalVisible(false); setAiResult(null); setFoodSearchText(""); }}>
+                <Ionicons name="close-circle" size={28} color="#4A5568" />
               </TouchableOpacity>
             </View>
 
@@ -299,90 +336,71 @@ export default function HomeScreen() {
               <TextInput
                 style={styles.searchInput}
                 placeholder="음식 이름을 입력하세요 (예: 닭가슴살)"
-                placeholderTextColor="#666"
+                placeholderTextColor="#4A5568"
                 value={foodSearchText}
                 onChangeText={setFoodSearchText}
                 onSubmitEditing={handleSearchFood}
                 returnKeyType="search"
               />
-              <TouchableOpacity
-                style={styles.searchButton}
-                onPress={handleSearchFood}
-              >
-                <Ionicons name="search" size={20} color="white" />
+              <TouchableOpacity style={styles.searchButton} onPress={handleSearchFood}>
+                <Ionicons name="search" size={18} color="white" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.aiResultBox}>
               {isSearching ? (
                 <>
-                  <ActivityIndicator size="large" color="#FF5252" />
-                  <Text style={[styles.aiResultText, { marginTop: 10 }]}>
-                    AI가 분석 중입니다...
-                  </Text>
+                  <ActivityIndicator size="large" color="#00C896" />
+                  <Text style={[styles.aiHintText, { marginTop: 12 }]}>AI가 분석 중입니다...</Text>
                 </>
               ) : aiResult ? (
                 <>
-                  <Text style={styles.aiResultFoodName} numberOfLines={1}>
-                    {aiResult.foodName}
-                  </Text>
+                  <View style={styles.resultHeader}>
+                    <Ionicons name="fast-food" size={20} color="#00C896" />
+                    <Text style={styles.aiResultFoodName} numberOfLines={1}>{aiResult.foodName}</Text>
+                  </View>
                   <Text style={styles.aiResultServing}>{aiResult.servingSize}</Text>
-                  <View style={styles.aiResultCalorieRow}>
-                    <Text style={styles.aiResultCalorieValue}>
-                      {Math.round(aiResult.calories)}
-                    </Text>
-                    <Text style={styles.aiResultCalorieUnit}> kcal</Text>
+                  <View style={styles.calorieHighlight}>
+                    <Text style={styles.calorieHighlightNum}>{Math.round(aiResult.calories)}</Text>
+                    <Text style={styles.calorieHighlightUnit}>kcal</Text>
                   </View>
                   <View style={styles.aiNutrientRow}>
-                    <View style={styles.aiNutrientItem}>
-                      <Text style={styles.aiNutrientLabel}>탄수화물</Text>
-                      <Text style={styles.aiNutrientValue}>
-                        {Math.round(aiResult.carbs)}g
-                      </Text>
-                    </View>
-                    <View style={styles.aiNutrientDivider} />
-                    <View style={styles.aiNutrientItem}>
-                      <Text style={styles.aiNutrientLabel}>단백질</Text>
-                      <Text style={styles.aiNutrientValue}>
-                        {Math.round(aiResult.protein)}g
-                      </Text>
-                    </View>
-                    <View style={styles.aiNutrientDivider} />
-                    <View style={styles.aiNutrientItem}>
-                      <Text style={styles.aiNutrientLabel}>지방</Text>
-                      <Text style={styles.aiNutrientValue}>
-                        {Math.round(aiResult.fat)}g
-                      </Text>
-                    </View>
+                    {[
+                      { label: "탄수화물", value: Math.round(aiResult.carbs), color: "#60A5FA" },
+                      { label: "단백질", value: Math.round(aiResult.protein), color: "#00C896" },
+                      { label: "지방", value: Math.round(aiResult.fat), color: "#F97316" },
+                    ].map((n, i) => (
+                      <View key={i} style={styles.aiNutrientItem}>
+                        <View style={[styles.nutrientBar, { backgroundColor: n.color + "33" }]}>
+                          <Text style={[styles.nutrientBarValue, { color: n.color }]}>{n.value}g</Text>
+                        </View>
+                        <Text style={styles.aiNutrientLabel}>{n.label}</Text>
+                      </View>
+                    ))}
                   </View>
                 </>
               ) : (
                 <>
-                  <Ionicons
-                    name="sparkles"
-                    size={24}
-                    color="#FF5252"
-                    style={{ marginBottom: 8 }}
-                  />
-                  <Text style={styles.aiResultText}>
-                    음식 이름을 검색하면{"\n"}AI가 칼로리를 분석해 드립니다
-                  </Text>
+                  <View style={styles.aiHintIcon}>
+                    <Ionicons name="sparkles" size={28} color="#00C896" />
+                  </View>
+                  <Text style={styles.aiHintText}>음식 이름을 검색하면{"\n"}AI가 칼로리를 분석해 드립니다</Text>
                 </>
               )}
             </View>
 
             <TouchableOpacity
-              style={[
-                styles.saveFoodButton,
-                (!aiResult || isSaving) && styles.saveFoodButtonDisabled,
-              ]}
+              style={[styles.saveFoodButton, (!aiResult || isSaving) && styles.saveFoodButtonDisabled]}
               onPress={handleSaveFood}
               disabled={!aiResult || isSaving}
             >
               {isSaving ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text style={styles.saveFoodButtonText}>기록 저장하기</Text>
+                <>
+                  <Ionicons name="checkmark" size={18} color="#fff" style={{ marginRight: 6 }} />
+                  <Text style={styles.saveFoodButtonText}>기록 저장하기</Text>
+                </>
               )}
             </TouchableOpacity>
           </View>
