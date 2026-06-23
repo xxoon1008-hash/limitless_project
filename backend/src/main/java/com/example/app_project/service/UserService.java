@@ -5,6 +5,7 @@ import com.example.app_project.domain.User;
 import com.example.app_project.dto.UserRequestDto;
 import com.example.app_project.dto.UserResponseDto;
 import com.example.app_project.repository.AttendanceRepository;
+import com.example.app_project.repository.FoodRecordRepository;
 import com.example.app_project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +25,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AttendanceRepository attendanceRepository;
+    private final FoodRecordRepository foodRecordRepository;
     private final PasswordEncoder passwordEncoder;
 
     private void validateEmail(String email) {
@@ -120,6 +122,7 @@ public class UserService {
                 throw new RuntimeException("비밀번호가 올바르지 않습니다.");
             }
         }
+        foodRecordRepository.deleteAllByUser(user);
         attendanceRepository.deleteAllByUser(user);
         userRepository.delete(user);
     }

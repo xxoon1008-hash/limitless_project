@@ -13,6 +13,8 @@ public interface FoodRecordRepository extends JpaRepository<FoodRecord, Long> {
 
     List<FoodRecord> findByUserAndRecordedAt(User user, LocalDate recordedAt);
 
+    void deleteAllByUser(User user);
+
     @Query("SELECT COALESCE(SUM(f.calories), 0) FROM FoodRecord f WHERE f.user = :user AND f.recordedAt = :date")
     double sumCaloriesByUserAndDate(@Param("user") User user, @Param("date") LocalDate date);
 }
