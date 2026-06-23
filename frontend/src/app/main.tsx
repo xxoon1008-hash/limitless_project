@@ -203,9 +203,6 @@ export default function HomeScreen() {
           <View>
             <Text style={styles.headerTitle}>Limitless</Text>
           </View>
-          <View style={styles.headerBadge}>
-            <Ionicons name="fitness-outline" size={22} color="#00C896" />
-          </View>
         </View>
 
         {/* ── 날짜 + 출석 뱃지 ── */}
@@ -362,7 +359,7 @@ export default function HomeScreen() {
               <View>
                 <Text style={styles.modalTitle}>식단 기록</Text>
                 <Text style={styles.modalSub}>
-                  AI가 칼로리를 자동 분석합니다
+                  AI가 칼로리를 자동 분석합니다.
                 </Text>
               </View>
               <TouchableOpacity
@@ -404,15 +401,6 @@ export default function HomeScreen() {
                 </>
               ) : aiResult ? (
                 <>
-                  <View style={styles.resultHeader}>
-                    <Ionicons name="fast-food" size={20} color="#00C896" />
-                    <Text style={styles.aiResultFoodName} numberOfLines={1}>
-                      {aiResult.foodName}
-                    </Text>
-                  </View>
-                  <Text style={styles.aiResultServing}>
-                    {aiResult.servingSize}
-                  </Text>
                   <View style={styles.calorieHighlight}>
                     <Text style={styles.calorieHighlightNum}>
                       {Math.round(aiResult.calories)}
@@ -464,7 +452,7 @@ export default function HomeScreen() {
                     <Ionicons name="sparkles" size={28} color="#00C896" />
                   </View>
                   <Text style={styles.aiHintText}>
-                    음식 이름을 검색하면{"\n"}AI가 칼로리를 분석해 드립니다
+                    음식 이름을 검색하면{"\n"}AI가 칼로리를 분석해 드립니다.
                   </Text>
                 </>
               )}
