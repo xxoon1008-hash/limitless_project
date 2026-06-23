@@ -201,7 +201,6 @@ export default function HomeScreen() {
         {/* ── 헤더 ── */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.headerGreeting}>안녕하세요 👋</Text>
             <Text style={styles.headerTitle}>Limitless</Text>
           </View>
           <View style={styles.headerBadge}>
@@ -221,7 +220,11 @@ export default function HomeScreen() {
         </View>
 
         {/* ── 칼로리 요약 카드 ── */}
-        <View style={styles.calorieCard}>
+        <TouchableOpacity
+          style={styles.calorieCard}
+          onPress={() => setIsFoodModalVisible(true)}
+          activeOpacity={0.8}
+        >
           <View style={styles.calorieCardTop}>
             <View>
               <Text style={styles.calorieCardLabel}>오늘 섭취 칼로리</Text>
@@ -230,12 +233,6 @@ export default function HomeScreen() {
                 <Text style={styles.calorieUnit}> / {goalCalories} kcal</Text>
               </View>
             </View>
-            <TouchableOpacity
-              style={styles.addFoodBtn}
-              onPress={() => setIsFoodModalVisible(true)}
-            >
-              <Ionicons name="add" size={22} color="#fff" />
-            </TouchableOpacity>
           </View>
 
           {/* 진행 바 */}
@@ -267,6 +264,21 @@ export default function HomeScreen() {
                 {Math.max(goalCalories - intake, 0)} kcal
               </Text>
             </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* ── 달력 ── */}
+        <View style={styles.calendarSection}>
+          <Text style={styles.sectionTitle}>출석 캘린더</Text>
+          <Text style={styles.sectionSub}>
+            이번 달 {attendanceDates.length}일 출석
+          </Text>
+          <View style={styles.calendarBox}>
+            <WorkoutCalendar
+              attendanceDates={attendanceDates}
+              onDayPress={(day: any) => setSelectedDate(day.dateString)}
+              selectedDate={selectedDate}
+            />
           </View>
         </View>
 
@@ -306,21 +318,6 @@ export default function HomeScreen() {
           )}
         </TouchableOpacity>
         {message ? <Text style={styles.errorText}>{message}</Text> : null}
-
-        {/* ── 달력 ── */}
-        <View style={styles.calendarSection}>
-          <Text style={styles.sectionTitle}>출석 캘린더</Text>
-          <Text style={styles.sectionSub}>
-            이번 달 {attendanceDates.length}일 출석
-          </Text>
-          <View style={styles.calendarBox}>
-            <WorkoutCalendar
-              attendanceDates={attendanceDates}
-              onDayPress={(day: any) => setSelectedDate(day.dateString)}
-              selectedDate={selectedDate}
-            />
-          </View>
-        </View>
       </ScrollView>
 
       {/* ── 하단 탭 ── */}

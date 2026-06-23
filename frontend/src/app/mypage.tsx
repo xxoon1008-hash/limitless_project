@@ -176,66 +176,82 @@ export default function MyPageScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#1c1c1c" }}>
+    <View style={{ flex: 1, backgroundColor: "#0A0F1E" }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* 1. 상단 프로필 영역 */}
         <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>👤</Text>
+          <View style={styles.avatarWrapper}>
+            <View style={styles.avatar}>
+              <Ionicons name="person" size={38} color="#64748B" />
+            </View>
           </View>
-          <View style={styles.userInfo}>
-            <Text style={styles.welcomeText}>
-              <Text style={styles.userName}>{userName}</Text>
-            </Text>
+          <Text style={styles.userName}>{userName}</Text>
+          <TouchableOpacity
+            style={styles.changeNameButton}
+            onPress={() => openModal("name")}
+            disabled={isLoading}
+          >
+            <Text style={styles.changeNameButtonText}>이름 변경하기</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* 2. 계정 메뉴 */}
+        <View style={styles.menuSection}>
+          <Text style={styles.menuSectionLabel}>계정</Text>
+          <View style={styles.menuCard}>
             <TouchableOpacity
-              style={styles.changeNameButton}
-              onPress={() => openModal("name")}
-              disabled={isLoading}
+              style={styles.menuItem}
+              onPress={() => openModal("password")}
             >
-              <Text style={styles.changeNameButtonText}>이름 변경하기</Text>
+              <View style={[styles.menuIconWrap, { backgroundColor: "rgba(0,200,150,0.12)" }]}>
+                <Ionicons name="lock-closed-outline" size={18} color="#00C896" />
+              </View>
+              <Text style={styles.menuText}>비밀번호 변경</Text>
+              <Ionicons name="chevron-forward" size={16} color="#64748B" style={styles.menuArrow} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.menuItem, styles.menuItemLast]}
+              onPress={() => showAlert("이메일: support@limitless.com")}
+            >
+              <View style={[styles.menuIconWrap, { backgroundColor: "rgba(96,165,250,0.12)" }]}>
+                <Ionicons name="headset-outline" size={18} color="#60A5FA" />
+              </View>
+              <Text style={styles.menuText}>고객 지원</Text>
+              <Ionicons name="chevron-forward" size={16} color="#64748B" style={styles.menuArrow} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.divider} />
+        {/* 3. 기타 메뉴 */}
+        <View style={styles.menuSection}>
+          <Text style={styles.menuSectionLabel}>기타</Text>
+          <View style={styles.menuCard}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleLogout}
+            >
+              <View style={[styles.menuIconWrap, { backgroundColor: "rgba(248,113,113,0.12)" }]}>
+                <Ionicons name="log-out-outline" size={18} color="#F87171" />
+              </View>
+              <Text style={styles.menuTextRed}>로그아웃</Text>
+              <Ionicons name="chevron-forward" size={16} color="#64748B" style={styles.menuArrow} />
+            </TouchableOpacity>
 
-        {/* 2. 하단 메뉴 영역 */}
-        <View style={styles.menuContainer}>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => openModal("password")}
-          >
-            <Text style={styles.menuText}>비밀번호 변경</Text>
-            <Text style={styles.arrow}>＞</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => showAlert("이메일: support@limitless.com")}
-          >
-            <Text style={styles.menuText}>고객 지원</Text>
-            <Text style={styles.arrow}>＞</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-            <Text style={[styles.menuText, { color: "#e74c3c" }]}>
-              로그아웃
-            </Text>
-            <Text style={styles.arrow}>＞</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.menuItem, { borderBottomWidth: 0 }]}
-            onPress={handleDeleteAccount}
-          >
-            <Text style={[styles.menuText, { color: "#e74c3c" }]}>
-              회원 탈퇴
-            </Text>
-            <Text style={styles.arrow}>＞</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.menuItem, styles.menuItemLast]}
+              onPress={handleDeleteAccount}
+            >
+              <View style={[styles.menuIconWrap, { backgroundColor: "rgba(248,113,113,0.12)" }]}>
+                <Ionicons name="trash-outline" size={18} color="#F87171" />
+              </View>
+              <Text style={styles.menuTextRed}>회원 탈퇴</Text>
+              <Ionicons name="chevron-forward" size={16} color="#64748B" style={styles.menuArrow} />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <Text style={styles.securityFooter}></Text>
+        <View style={styles.footer} />
       </ScrollView>
 
       {/* 하단 메뉴 */}
