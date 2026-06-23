@@ -274,16 +274,20 @@ export default function MyPageScreen() {
             : styles.bottomNav
         }
       >
-        <TouchableOpacity onPress={() => router.replace("/main")}>
-          <Ionicons name="home-outline" size={28} color="#A0A0A0" />
+        <TouchableOpacity style={styles.navItem} onPress={() => router.replace("/main")}>
+          <Ionicons name="home-outline" size={24} color="#4A5568" />
+          <Text style={styles.navLabel}>홈</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.replace("/kakaomap")}>
-          <Ionicons name="map-outline" size={28} color="#A0A0A0" />
+        <TouchableOpacity style={styles.navItem} onPress={() => router.replace("/kakaomap")}>
+          <Ionicons name="map-outline" size={24} color="#4A5568" />
+          <Text style={styles.navLabel}>지도</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity>
-          <Ionicons name="person" size={28} color="#FF5252" />
+        <TouchableOpacity style={styles.navItem}>
+          <View style={styles.navActiveIndicator} />
+          <Ionicons name="person" size={24} color="#00C896" />
+          <Text style={styles.navLabelActive}>마이</Text>
         </TouchableOpacity>
       </View>
 
