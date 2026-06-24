@@ -43,7 +43,7 @@ const KAKAO_MAP_HTML = (foodLocations: FoodLocation[]) => `
 </head>
 <body>
   <div id="map"></div>
-  <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}"></script>
+  <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&libraries=clusterer"></script>
   <script type="text/javascript">
     var container = document.getElementById("map");
     var options = {
@@ -61,27 +61,20 @@ const KAKAO_MAP_HTML = (foodLocations: FoodLocation[]) => `
     var foodLocations = ${JSON.stringify(foodLocations)};
     var openInfoWindow = null;
 
-    foodLocations.forEach(function(item) {
+    var markerImage = new kakao.maps.MarkerImage(
+      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+      new kakao.maps.Size(24, 35)
+    );
+
+    var markers = foodLocations.map(function(item) {
       var pos = new kakao.maps.LatLng(item.latitude, item.longitude);
-
-      var markerImage = new kakao.maps.MarkerImage(
-        'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
-        new kakao.maps.Size(24, 35)
-      );
-
-      var marker = new kakao.maps.Marker({
-        map: map,
-        position: pos,
-        image: markerImage,
-        title: item.foodName,
-      });
+      var marker = new kakao.maps.Marker({ position: pos, image: markerImage, title: item.foodName });
 
       var content =
         '<div class="info-window">' +
         '<div class="info-name">' + item.foodName + '</div>' +
         '<div class="info-cal">' + Math.round(item.calories) + ' kcal · ' + item.recordedAt + '</div>' +
         '</div>';
-
       var infoWindow = new kakao.maps.InfoWindow({ content: content, removable: true });
 
       kakao.maps.event.addListener(marker, 'click', function() {
@@ -89,6 +82,30 @@ const KAKAO_MAP_HTML = (foodLocations: FoodLocation[]) => `
         infoWindow.open(map, marker);
         openInfoWindow = infoWindow;
       });
+
+      return marker;
+    });
+
+    new kakao.maps.MarkerClusterer({
+      map: map,
+      markers: markers,
+      gridSize: 60,
+      averageCenter: true,
+      minLevel: 4,
+      disableClickZoom: false,
+      styles: [{
+        width: '48px',
+        height: '48px',
+        background: '#00C896',
+        borderRadius: '50%',
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: '15px',
+        lineHeight: '48px',
+        textAlign: 'center',
+        border: '2px solid #fff',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+      }],
     });
   </script>
 </body>
@@ -101,12 +118,19 @@ function KakaoMapWeb({ foodLocations }: { foodLocations: FoodLocation[] }) {
   useEffect(() => {
     const loadScript = (): Promise<void> =>
       new Promise((resolve) => {
-        if ((window as any).kakao?.maps) {
+        if ((window as any).kakao?.maps?.MarkerClusterer) {
           resolve();
           return;
         }
+        // 이미 스크립트가 로드됐지만 clusterer가 없는 경우 기존 스크립트 제거
+        const existing = document.querySelector(
+          `script[src*="dapi.kakao.com"]`,
+        );
+        if (existing) existing.remove();
+        delete (window as any).kakao;
+
         const script = document.createElement("script");
-        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false`;
+        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&autoload=false&libraries=clusterer`;
         script.onload = () => (window as any).kakao.maps.load(resolve);
         document.head.appendChild(script);
       });
@@ -136,16 +160,14 @@ function KakaoMapWeb({ foodLocations }: { foodLocations: FoodLocation[] }) {
 
         let openInfoWindow: any = null;
 
-        foodLocations.forEach((item) => {
+        const markerImage = new kakao.maps.MarkerImage(
+          "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+          new kakao.maps.Size(24, 35),
+        );
+
+        const markers = foodLocations.map((item) => {
           const pos = new kakao.maps.LatLng(item.latitude, item.longitude);
-
-          const markerImage = new kakao.maps.MarkerImage(
-            "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
-            new kakao.maps.Size(24, 35),
-          );
-
           const marker = new kakao.maps.Marker({
-            map,
             position: pos,
             image: markerImage,
             title: item.foodName,
@@ -167,6 +189,32 @@ function KakaoMapWeb({ foodLocations }: { foodLocations: FoodLocation[] }) {
             infoWindow.open(map, marker);
             openInfoWindow = infoWindow;
           });
+
+          return marker;
+        });
+
+        new kakao.maps.MarkerClusterer({
+          map,
+          markers,
+          gridSize: 60,
+          averageCenter: true,
+          minLevel: 4,
+          disableClickZoom: false,
+          styles: [
+            {
+              width: "48px",
+              height: "48px",
+              background: "#00C896",
+              borderRadius: "50%",
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: "15px",
+              lineHeight: "48px",
+              textAlign: "center",
+              border: "2px solid #fff",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+            },
+          ],
         });
       });
     });
