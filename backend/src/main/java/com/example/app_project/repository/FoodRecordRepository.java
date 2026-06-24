@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface FoodRecordRepository extends JpaRepository<FoodRecord, Long> {
 
+    List<FoodRecord> findByUser(User user);
+
     List<FoodRecord> findByUserAndRecordedAt(User user, LocalDate recordedAt);
 
     void deleteAllByUser(User user);

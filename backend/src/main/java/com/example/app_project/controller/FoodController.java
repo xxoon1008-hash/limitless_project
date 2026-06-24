@@ -120,6 +120,9 @@ public class FoodController {
         String dateStr = (String) request.get("date");
         LocalDate date = (dateStr != null) ? LocalDate.parse(dateStr) : LocalDate.now();
 
+        Double latitude = toDoubleOrNull(request.get("latitude"));
+        Double longitude = toDoubleOrNull(request.get("longitude"));
+
         FoodRecord record = FoodRecord.builder()
                 .user(user)
                 .recordedAt(date)
@@ -129,6 +132,8 @@ public class FoodController {
                 .carbs(toDouble(request.get("carbs")))
                 .fat(toDouble(request.get("fat")))
                 .servingSize((String) request.get("servingSize"))
+                .latitude(latitude)
+                .longitude(longitude)
                 .build();
 
         foodRecordRepository.save(record);
@@ -152,15 +157,46 @@ public class FoodController {
         return ResponseEntity.ok(Map.of(
                 "date", date,
                 "totalCalories", (int) totalCalories,
-                "records", records.stream().map(r -> Map.of(
-                        "foodName", r.getFoodName(),
-                        "calories", r.getCalories(),
-                        "protein", r.getProtein(),
-                        "carbs", r.getCarbs(),
-                        "fat", r.getFat(),
-                        "servingSize", r.getServingSize() != null ? r.getServingSize() : ""
-                )).toList()
+                "records", records.stream().map(r -> {
+                    java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+                    m.put("id", r.getId());
+                    m.put("foodName", r.getFoodName());
+                    m.put("calories", r.getCalories());
+                    m.put("protein", r.getProtein());
+                    m.put("carbs", r.getCarbs());
+                    m.put("fat", r.getFat());
+                    m.put("servingSize", r.getServingSize() != null ? r.getServingSize() : "");
+                    m.put("latitude", r.getLatitude());
+                    m.put("longitude", r.getLongitude());
+                    return m;
+                }).toList()
         ));
+    }
+
+    // 위치가 있는 식단 기록 전체 조회 (지도용)
+    @GetMapping("/record/locations")
+    public ResponseEntity<?> getRecordLocations(
+            @RequestHeader("Authorization") String token) {
+        String email = jwtTokenProvider.getEmailFromToken(token.replace("Bearer ", ""));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+
+        List<FoodRecord> all = foodRecordRepository.findByUser(user);
+
+        List<java.util.Map<String, Object>> locations = all.stream()
+                .filter(r -> r.getLatitude() != null && r.getLongitude() != null)
+                .map(r -> {
+                    java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+                    m.put("id", r.getId());
+                    m.put("foodName", r.getFoodName());
+                    m.put("calories", r.getCalories());
+                    m.put("recordedAt", r.getRecordedAt().toString());
+                    m.put("latitude", r.getLatitude());
+                    m.put("longitude", r.getLongitude());
+                    return m;
+                }).toList();
+
+        return ResponseEntity.ok(locations);
     }
 
     private String firstText(JsonNode node, String... keys) {
@@ -183,5 +219,11 @@ public class FoodController {
         if (val == null) return 0;
         if (val instanceof Number) return ((Number) val).doubleValue();
         try { return Double.parseDouble(val.toString()); } catch (Exception e) { return 0; }
+    }
+
+    private Double toDoubleOrNull(Object val) {
+        if (val == null) return null;
+        if (val instanceof Number) return ((Number) val).doubleValue();
+        try { return Double.parseDouble(val.toString()); } catch (Exception e) { return null; }
     }
 }

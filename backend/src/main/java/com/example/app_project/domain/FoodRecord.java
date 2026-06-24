@@ -40,9 +40,16 @@ public class FoodRecord {
     @Column
     private String servingSize;
 
+    @Column
+    private Double latitude;
+
+    @Column
+    private Double longitude;
+
     @Builder
     public FoodRecord(User user, LocalDate recordedAt, String foodName,
-                      double calories, double protein, double carbs, double fat, String servingSize) {
+                      double calories, double protein, double carbs, double fat, String servingSize,
+                      Double latitude, Double longitude) {
         this.user = user;
         this.recordedAt = recordedAt;
         this.foodName = foodName;
@@ -51,5 +58,7 @@ public class FoodRecord {
         this.carbs = carbs;
         this.fat = fat;
         this.servingSize = servingSize;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 }

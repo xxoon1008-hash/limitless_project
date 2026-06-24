@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from "expo-location";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -158,6 +159,19 @@ export default function HomeScreen() {
     if (!token) return;
     setIsSaving(true);
     try {
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === "granted") {
+          const loc = await Location.getCurrentPositionAsync({});
+          latitude = loc.coords.latitude;
+          longitude = loc.coords.longitude;
+        }
+      } catch {
+        // 위치 권한 없어도 저장 진행
+      }
+
       const res = await fetch(`${API_URL}/api/food/record`, {
         method: "POST",
         headers: {
@@ -172,6 +186,8 @@ export default function HomeScreen() {
           carbs: aiResult.carbs,
           fat: aiResult.fat,
           servingSize: aiResult.servingSize,
+          latitude,
+          longitude,
         }),
       });
       if (!res.ok) throw new Error("저장 실패");
