@@ -89,7 +89,7 @@ const KAKAO_MAP_HTML = (groups: GroupedLocation[]) => `
 
     groups.forEach(function(group) {
       var pos = new kakao.maps.LatLng(group.latitude, group.longitude);
-      var marker = new kakao.maps.Marker({ map: map, position: pos, image: markerImage });
+      var marker = new kakao.maps.Marker({ map: map, position: pos, image: markerImage, zIndex: 10 });
 
       var rows = group.items.map(function(item, i) {
         var divider = i > 0 ? '<hr class="iw-divider">' : '';
@@ -155,7 +155,7 @@ function KakaoMapWeb({ groups }: { groups: GroupedLocation[] }) {
 
         groups.forEach((group) => {
           const pos = new kakao.maps.LatLng(group.latitude, group.longitude);
-          const marker = new kakao.maps.Marker({ map, position: pos, image: markerImage });
+          const marker = new kakao.maps.Marker({ map, position: pos, image: markerImage, zIndex: 10 });
 
           const rows = group.items
             .map((item, i) => {
