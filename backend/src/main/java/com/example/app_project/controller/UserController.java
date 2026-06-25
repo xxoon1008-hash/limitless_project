@@ -69,9 +69,8 @@ public class UserController {
             @RequestBody(required = false) Map<String, String> body) {
         String email = jwtTokenProvider.getEmailFromToken(token.replace("Bearer ", ""));
         String password = body != null ? body.get("password") : null;
-        String code = body != null ? body.get("code") : null;
         try {
-            userService.deleteAccount(email, password, code);
+            userService.deleteAccount(email, password);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

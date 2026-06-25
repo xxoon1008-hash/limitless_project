@@ -27,7 +27,6 @@ public class UserService {
     private final AttendanceRepository attendanceRepository;
     private final FoodRecordRepository foodRecordRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailVerificationService emailVerificationService;
 
     private void validateEmail(String email) {
         if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
@@ -115,16 +114,12 @@ public class UserService {
 
     // 회원 탈퇴
     @Transactional
-    public void deleteAccount(String email, String password, String code) {
+    public void deleteAccount(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다"));
         if ("local".equals(user.getProvider())) {
             if (password == null || !passwordEncoder.matches(password, user.getPassword())) {
                 throw new RuntimeException("비밀번호가 올바르지 않습니다.");
-            }
-        } else {
-            if (!emailVerificationService.verifyCode(email, code)) {
-                throw new RuntimeException("인증번호가 올바르지 않거나 만료되었습니다.");
             }
         }
         foodRecordRepository.deleteAllByUser(user);
