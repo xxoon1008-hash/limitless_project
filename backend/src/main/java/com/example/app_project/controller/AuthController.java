@@ -4,6 +4,7 @@ import com.example.app_project.dto.UserRequestDto;
 import com.example.app_project.jwt.JwtTokenProvider;
 import com.example.app_project.repository.UserRepository;
 import com.example.app_project.domain.User;
+import com.example.app_project.service.EmailVerificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +22,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserRequestDto request) {
@@ -51,6 +53,20 @@ public class AuthController {
     @GetMapping("/token")
     public ResponseEntity<?> getToken(@RequestParam String token) {
         return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    @PostMapping("/email/send")
+    public ResponseEntity<?> sendEmailCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "이메일을 입력해 주세요."));
+        }
+        try {
+            emailVerificationService.sendCode(email);
+            return ResponseEntity.ok(Map.of("message", "인증번호가 발송되었습니다."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @GetMapping("/test")

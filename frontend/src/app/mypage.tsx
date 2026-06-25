@@ -28,6 +28,10 @@ export default function MyPageScreen() {
   const [heightInput, setHeightInput] = useState("");
   const [weightInput, setWeightInput] = useState("");
   const [deletePasswordInput, setDeletePasswordInput] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [deleteCodeInput, setDeleteCodeInput] = useState("");
+  const [deleteCodeSent, setDeleteCodeSent] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
 
   useEffect(() => {
     const loadUserInfo = async () => {
@@ -42,6 +46,7 @@ export default function MyPageScreen() {
         if (res.ok) {
           const data = await res.json();
           setUserProvider(data.provider || "local");
+          setUserEmail(data.email || "");
           // 구글 로그인이면 이메일, 일반 로그인이면 아이디 → 없으면 이메일 표시
           if (data.provider === "google") {
             setUserName(data.email);
@@ -71,7 +76,11 @@ export default function MyPageScreen() {
       setHeightInput("");
       setWeightInput("");
     }
-    if (type === "deleteAccount") setDeletePasswordInput("");
+    if (type === "deleteAccount") {
+      setDeletePasswordInput("");
+      setDeleteCodeInput("");
+      setDeleteCodeSent(false);
+    }
     setActiveModal(type);
   };
 
@@ -136,15 +145,21 @@ export default function MyPageScreen() {
       } else if (activeModal === "deleteAccount") {
         if (userProvider === "local" && !deletePasswordInput)
           return showAlert("비밀번호를 입력해 주세요.");
+        if (userProvider !== "local" && !deleteCodeInput)
+          return showAlert("인증번호를 입력해 주세요.");
 
         const token = await AsyncStorage.getItem("jwt_token");
+        const body =
+          userProvider === "local"
+            ? { password: deletePasswordInput }
+            : { code: deleteCodeInput };
         const res = await fetch(`${API_URL}/api/users/me`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ password: deletePasswordInput }),
+          body: JSON.stringify(body),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -163,6 +178,28 @@ export default function MyPageScreen() {
       showAlert("전송 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSendDeleteCode = async () => {
+    setIsSendingCode(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/email/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail }),
+      });
+      if (res.ok) {
+        setDeleteCodeSent(true);
+        showAlert(`${userEmail}로 인증번호를 발송했습니다.`);
+      } else {
+        const data = await res.json();
+        showAlert(data.message || "인증번호 발송에 실패했습니다.");
+      }
+    } catch {
+      showAlert("서버와 통신 중 오류가 발생했습니다.");
+    } finally {
+      setIsSendingCode(false);
     }
   };
 
@@ -360,9 +397,41 @@ export default function MyPageScreen() {
                     />
                   </>
                 ) : (
-                  <Text style={styles.deleteWarningText}>
-                    정말로 탈퇴하시겠습니까?{"\n"}이 작업은 되돌릴 수 없습니다.
-                  </Text>
+                  <>
+                    <Text style={styles.deleteWarningText}>
+                      가입한 이메일로 인증번호를 발송합니다.{"\n"}인증 후 탈퇴가 진행됩니다.
+                    </Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                      <Text style={[styles.modalInput, { flex: 1, textAlignVertical: "center", color: "#ccc", paddingVertical: 12 }]}>
+                        {userEmail}
+                      </Text>
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: deleteCodeSent ? "#333" : "#00C896",
+                          paddingHorizontal: 14,
+                          paddingVertical: 12,
+                          borderRadius: 8,
+                        }}
+                        onPress={handleSendDeleteCode}
+                        disabled={isSendingCode}
+                      >
+                        <Text style={{ color: "#fff", fontSize: 13, fontWeight: "600" }}>
+                          {isSendingCode ? "발송 중..." : deleteCodeSent ? "재발송" : "발송"}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                    {deleteCodeSent && (
+                      <TextInput
+                        style={styles.modalInput}
+                        value={deleteCodeInput}
+                        onChangeText={setDeleteCodeInput}
+                        placeholder="인증번호 6자리 입력"
+                        placeholderTextColor="#888"
+                        keyboardType="number-pad"
+                        maxLength={6}
+                      />
+                    )}
+                  </>
                 )}
               </>
             )}
