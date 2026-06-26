@@ -392,7 +392,7 @@ export default function HomeScreen() {
             <View style={styles.searchRow}>
               <TextInput
                 style={styles.searchInput}
-                placeholder="음식 이름을 입력하세요 (예: 닭가슴살)"
+                placeholder="음식 이름을 입력하세요."
                 placeholderTextColor="#4A5568"
                 value={foodSearchText}
                 onChangeText={setFoodSearchText}

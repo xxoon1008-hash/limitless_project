@@ -106,7 +106,7 @@ export default function MyPageScreen() {
           return showAlert(data.message || "아이디 변경에 실패했습니다.");
         }
         setUserName(safeName);
-        showAlert("아이디가 성공적으로 변경되었습니다.");
+        showAlert("아이디가 변경되었습니다.");
       } else if (activeModal === "password") {
         if (!passwordInput || !passwordConfirmInput)
           return showAlert("비밀번호를 모두 입력해 주세요.");
@@ -117,7 +117,7 @@ export default function MyPageScreen() {
             "비밀번호는 8자 이상이며 특수문자를 포함해야 합니다.",
           );
         if (passwordInput !== passwordConfirmInput)
-          return showAlert("비밀번호가 서로 일치하지 않습니다.");
+          return showAlert("비밀번호가 일치하지 않습니다.");
 
         const token = await AsyncStorage.getItem("jwt_token");
         const res = await fetch(`${API_URL}/api/users/password`, {
@@ -203,22 +203,46 @@ export default function MyPageScreen() {
               style={styles.menuItem}
               onPress={() => openModal("password")}
             >
-              <View style={[styles.menuIconWrap, { backgroundColor: "rgba(0,200,150,0.12)" }]}>
-                <Ionicons name="lock-closed-outline" size={18} color="#00C896" />
+              <View
+                style={[
+                  styles.menuIconWrap,
+                  { backgroundColor: "rgba(0,200,150,0.12)" },
+                ]}
+              >
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={18}
+                  color="#00C896"
+                />
               </View>
               <Text style={styles.menuText}>비밀번호 변경</Text>
-              <Ionicons name="chevron-forward" size={16} color="#64748B" style={styles.menuArrow} />
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color="#64748B"
+                style={styles.menuArrow}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.menuItem, styles.menuItemLast]}
               onPress={() => showAlert("이메일: support@limitless.com")}
             >
-              <View style={[styles.menuIconWrap, { backgroundColor: "rgba(96,165,250,0.12)" }]}>
+              <View
+                style={[
+                  styles.menuIconWrap,
+                  { backgroundColor: "rgba(96,165,250,0.12)" },
+                ]}
+              >
                 <Ionicons name="headset-outline" size={18} color="#60A5FA" />
               </View>
               <Text style={styles.menuText}>고객 지원</Text>
-              <Ionicons name="chevron-forward" size={16} color="#64748B" style={styles.menuArrow} />
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color="#64748B"
+                style={styles.menuArrow}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -227,26 +251,43 @@ export default function MyPageScreen() {
         <View style={styles.menuSection}>
           <Text style={styles.menuSectionLabel}>기타</Text>
           <View style={styles.menuCard}>
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={handleLogout}
-            >
-              <View style={[styles.menuIconWrap, { backgroundColor: "rgba(248,113,113,0.12)" }]}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+              <View
+                style={[
+                  styles.menuIconWrap,
+                  { backgroundColor: "rgba(248,113,113,0.12)" },
+                ]}
+              >
                 <Ionicons name="log-out-outline" size={18} color="#F87171" />
               </View>
               <Text style={styles.menuTextRed}>로그아웃</Text>
-              <Ionicons name="chevron-forward" size={16} color="#64748B" style={styles.menuArrow} />
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color="#64748B"
+                style={styles.menuArrow}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.menuItem, styles.menuItemLast]}
               onPress={handleDeleteAccount}
             >
-              <View style={[styles.menuIconWrap, { backgroundColor: "rgba(248,113,113,0.12)" }]}>
+              <View
+                style={[
+                  styles.menuIconWrap,
+                  { backgroundColor: "rgba(248,113,113,0.12)" },
+                ]}
+              >
                 <Ionicons name="trash-outline" size={18} color="#F87171" />
               </View>
               <Text style={styles.menuTextRed}>회원 탈퇴</Text>
-              <Ionicons name="chevron-forward" size={16} color="#64748B" style={styles.menuArrow} />
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color="#64748B"
+                style={styles.menuArrow}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -274,12 +315,18 @@ export default function MyPageScreen() {
             : styles.bottomNav
         }
       >
-        <TouchableOpacity style={styles.navItem} onPress={() => router.replace("/main")}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.replace("/main")}
+        >
           <Ionicons name="home-outline" size={24} color="#4A5568" />
           <Text style={styles.navLabel}>홈</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => router.replace("/kakaomap")}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.replace("/kakaomap")}
+        >
           <Ionicons name="map-outline" size={24} color="#4A5568" />
           <Text style={styles.navLabel}>지도</Text>
         </TouchableOpacity>
